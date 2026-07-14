@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api, egp, getUser, setSession, clearSession } from './api.js';
+import { api, egp, download, getUser, setSession, clearSession } from './api.js';
 
 export default function App() {
   const [user, setUser] = useState(getUser());
@@ -93,10 +93,22 @@ function Registry({ accounts, me, reload }) {
     try { await api('/admin/users/' + a.id, 'DELETE'); reload(); }
     catch (e) { alert(e.data?.error === 'cannot_delete_last_admin' ? 'Cannot delete the last admin.' : 'Error: ' + (e.data?.error || 'failed')); }
   }
+  const [dl, setDl] = useState(false);
+  async function excel() {
+    setDl(true);
+    try { await download('/admin/registry.xlsx', 'micasa-registry.xlsx'); }
+    catch { alert('Export failed.'); }
+    finally { setDl(false); }
+  }
   return (
     <>
-      <h2 className="title">Account Registry</h2>
-      <div className="sub">Every account ever created, recorded and kept until deleted here. Real records — not demo placeholders.</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h2 className="title">Account Registry</h2>
+          <div className="sub">Every account ever created, recorded and kept until deleted here. Real records — not demo placeholders.</div>
+        </div>
+        <button className="act" onClick={excel} disabled={dl}>{dl ? 'Building…' : '⬇ Excel'}</button>
+      </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {roles.map((r) => <button key={r} className={'act ' + (filter === r ? '' : 'ghost')} onClick={() => setFilter(r)}>{r === 'all' ? 'All' : r + 's'} {r !== 'all' ? '(' + accounts.filter((a) => a.role === r).length + ')' : '(' + accounts.length + ')'}</button>)}
       </div>

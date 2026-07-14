@@ -6,6 +6,8 @@ node_modules/
 .env
 **/.env
 docs/FIRST_LOGIN.md
+# generated live account export (usernames, phones, demo logins)
+docs/registry.xlsx
 # database (local dev)
 *.db
 *.db-journal

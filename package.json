@@ -19,7 +19,8 @@
     "build:apps": "npm --workspace @vp/customer run build && npm --workspace @vp/workers run build && npm --workspace @vp/cic run build && npm --workspace @vp/centcom-ui run build",
     "serve": "npm --workspace @vp/centcom run start",
     "start": "npm run db:setup && npm run seed:boot && node scripts/ensure-apps-built.mjs && npm run serve",
-    "seed:boot": "npm --workspace @vp/mainframe run seed:boot"
+    "seed:boot": "npm --workspace @vp/mainframe run seed:boot",
+    "export:registry": "tsx scripts/export-registry.ts"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

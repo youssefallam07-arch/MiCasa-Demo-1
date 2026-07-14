@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireRole } from '../auth';
 import { h, body } from '../helpers';
 import { admin, prisma } from '../core';
+import { buildRegistryWorkbook } from '../registry-xlsx';
 
 export const adminRouter = Router();
 adminRouter.use(requireRole('admin'));
@@ -20,6 +21,15 @@ adminRouter.get('/config', h(async (_req, res) => res.json({ config: await admin
 // ---- CENTCOM (owner master view) ----
 adminRouter.get('/registry', h(async (_req, res) => res.json({ accounts: await admin.allAccounts() })));
 adminRouter.get('/overview', h(async (_req, res) => res.json(await admin.platformOverview())));
+// Live Excel export — built fresh from the DB on every request (a current snapshot, never cached).
+adminRouter.get('/registry.xlsx', h(async (_req, res) => {
+  const wb = await buildRegistryWorkbook();
+  const stamp = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="micasa-registry-${stamp}.xlsx"`);
+  await wb.xlsx.write(res);
+  res.end();
+}));
 adminRouter.delete('/users/:id', h(async (req, res) => res.json(await admin.deleteAccount(req.params.id))));
 
 adminRouter.post('/workers/:id/verify', body(z.object({ status: z.enum(['pending', 'interviewed', 'trial', 'approved', 'rejected']) })), h(async (req, res) => {
