@@ -15,7 +15,9 @@
     "dev:centcom": "npm --workspace @vp/centcom run dev",
     "dev:cic": "npm --workspace @vp/cic run dev",
     "dev:customer": "npm --workspace @vp/customer run dev",
-    "dev:workers": "npm --workspace @vp/workers run dev"
+    "dev:workers": "npm --workspace @vp/workers run dev",
+    "build:apps": "npm --workspace @vp/customer run build && npm --workspace @vp/workers run build && npm --workspace @vp/cic run build",
+    "serve": "npm --workspace @vp/centcom run start"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

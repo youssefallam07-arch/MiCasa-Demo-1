@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+﻿const BASE = import.meta.env.VITE_API_BASE || '/api';
 let token = localStorage.getItem('vp_token') || null;
 let user = JSON.parse(localStorage.getItem('vp_user') || 'null');
 
