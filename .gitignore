@@ -1,0 +1,20 @@
+# deps
+node_modules/
+# portable toolchain (bootstrapped locally, do not commit)
+.tools/
+# env & secrets
+.env
+**/.env
+docs/FIRST_LOGIN.md
+# database (local dev)
+*.db
+*.db-journal
+packages/mainframe/prisma/*.db
+# build output
+dist/
+build/
+.vite/
+# logs / os
+*.log
+.DS_Store
+Thumbs.db

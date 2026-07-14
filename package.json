@@ -1,0 +1,23 @@
+{
+  "name": "venture-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Home-services bidding marketplace — Mainframe / Centcom / Workers / Customer / CIC",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run db:setup && npm run seed",
+    "db:setup": "npm --workspace @vp/mainframe run db:push && npm --workspace @vp/mainframe run generate",
+    "seed": "npm --workspace @vp/mainframe run seed",
+    "dev": "concurrently -n centcom,cic,customer,workers -c blue,magenta,green,yellow \"npm:dev:centcom\" \"npm:dev:cic\" \"npm:dev:customer\" \"npm:dev:workers\"",
+    "dev:centcom": "npm --workspace @vp/centcom run dev",
+    "dev:cic": "npm --workspace @vp/cic run dev",
+    "dev:customer": "npm --workspace @vp/customer run dev",
+    "dev:workers": "npm --workspace @vp/workers run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

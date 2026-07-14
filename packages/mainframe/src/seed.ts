@@ -1,0 +1,94 @@
+import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { prisma } from './db';
+import { seedConfigDefaults } from './config';
+import { requestTopup, confirmTopup } from './credit';
+import { postJob, submitBid, acceptBid, markComplete, confirmComplete } from './marketplace';
+
+const hash = (pw: string) => bcrypt.hashSync(pw, 10);
+const randomPw = () => crypto.randomBytes(15).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 20).padEnd(20, 'x');
+
+async function wipe() {
+  // delete in FK-dependency order
+  await prisma.serviceCreditTxn.deleteMany();
+  await prisma.serviceCreditAccount.deleteMany();
+  await prisma.topupRequest.deleteMany();
+  await prisma.rating.deleteMany();
+  await prisma.bid.deleteMany();
+  await prisma.job.deleteMany();
+  await prisma.workerProfile.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.adminConfig.deleteMany();
+}
+
+async function main() {
+  await wipe();
+  await seedConfigDefaults();
+
+  // ---- admin (the one account with direct editorial access) ----
+  const adminPw = randomPw();
+  await prisma.user.create({ data: { role: 'admin', username: 'youssef_hq', name: 'Youssef HQ', passwordHash: hash(adminPw) } });
+
+  // ---- customers (known password for local testing) ----
+  const mona = await prisma.user.create({ data: { role: 'customer', username: 'mona', name: 'منى', phone: '01000000001', passwordHash: hash('password123') } });
+  const khaled = await prisma.user.create({ data: { role: 'customer', username: 'khaled', name: 'خالد', phone: '01000000002', passwordHash: hash('password123') } });
+
+  // ---- workers ----
+  async function makeWorker(username: string, name: string, trade: string, zone: string, verification: string, walletMode: string) {
+    const u = await prisma.user.create({ data: { role: 'worker', username, name, phone: '0111' + Math.floor(Math.random() * 1e7), passwordHash: hash('password123') } });
+    await prisma.workerProfile.create({ data: { userId: u.id, trade, zone, verificationStatus: verification, walletMode } });
+    await prisma.serviceCreditAccount.create({ data: { workerId: u.id } });
+    return u;
+  }
+  const ahmed = await makeWorker('ahmed', 'أحمد السباك', 'plumbing', 'المعادي', 'approved', 'prepaid');   // funded, prepaid
+  const mahmoud = await makeWorker('mahmoud', 'محمود الكهربائي', 'electrical', 'المعادي', 'approved', 'postpaid'); // new, postpaid grace
+  await makeWorker('saeed', 'سعيد النجار', 'carpentry', 'مدينة نصر', 'pending', 'postpaid');               // in verification queue
+
+  // fund Ahmed's service credit (manual top-up → admin-confirmed)
+  const tu = await requestTopup(ahmed.id, 20000, 'vodafone_cash');
+  await confirmTopup(tu.ref);
+
+  // ---- 4 jobs in different states ----
+  // j1: OPEN with a bid
+  const j1 = await postJob(mona.id, { trade: 'plumbing', description: 'حنفية المطبخ بتنقّط مياه', zone: 'المعادي', budgetOfferPst: 30000, urgency: 'standard' });
+  await submitBid(ahmed.id, j1.id, 28000, 30);
+
+  // j2: ACCEPTED (postpaid worker → commission accrues as debt; visible hold in CIC)
+  const j2 = await postJob(mona.id, { trade: 'electrical', description: 'فيشة الغرفة بتفصل الكهربا', zone: 'المعادي', budgetOfferPst: 25000, urgency: 'standard' });
+  const b2 = await submitBid(mahmoud.id, j2.id, 24000, 25);
+  await acceptBid(mona.id, j2.id, b2.bidId);
+
+  // j3: COMPLETED (prepaid worker → held then captured as platform revenue)
+  const j3 = await postJob(khaled.id, { trade: 'plumbing', description: 'ماسورة الحمام مكسورة - طارئ', zone: 'المعادي', budgetOfferPst: 40000, urgency: 'priority' });
+  const b3 = await submitBid(ahmed.id, j3.id, 38000, 20);
+  await acceptBid(khaled.id, j3.id, b3.bidId);
+  await markComplete(ahmed.id, j3.id);
+  await confirmComplete(khaled.id, j3.id);
+
+  // j4: OPEN, no bids (no approved worker in that trade/zone yet)
+  await postJob(khaled.id, { trade: 'carpentry', description: 'باب الأوضة بيصوّت ومحتاج تظبيط', zone: 'مدينة نصر', budgetOfferPst: 35000, urgency: 'standard' });
+
+  // ---- write first-login credentials (gitignored) ----
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const docs = path.resolve(here, '../../../docs');
+  fs.mkdirSync(docs, { recursive: true });
+  fs.writeFileSync(path.join(docs, 'FIRST_LOGIN.md'), [
+    '# First login — CIC admin', '',
+    '**Change this password immediately after first login (CIC → change password).**', '',
+    '- Username: `youssef_hq`',
+    '- Password: `' + adminPw + '`', '',
+    '## Test accounts (local seed, password `password123`)',
+    '- Customers: `mona`, `khaled`',
+    '- Workers: `ahmed` (approved, prepaid, funded), `mahmoud` (approved, postpaid), `saeed` (pending verification)', '',
+  ].join('\n'));
+
+  const box = (s: string) => { const line = '═'.repeat(s.length + 4); return `\n╔${line}╗\n║  ${s}  ║\n╚${line}╝\n`; };
+  console.log(box(`ADMIN  youssef_hq  /  ${adminPw}`));
+  console.log('Seed complete: 1 admin, 2 customers, 3 workers, 4 jobs (open+bid / accepted / completed / open).');
+  console.log('Credentials also written to docs/FIRST_LOGIN.md (gitignored).');
+}
+
+main().then(() => prisma.$disconnect()).catch(async (e) => { console.error(e); await prisma.$disconnect(); process.exit(1); });

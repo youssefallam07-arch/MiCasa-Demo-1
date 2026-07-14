@@ -1,0 +1,147 @@
+// Mainframe database schema — the single source of truth.
+// SQLite now (zero-config, instant). Migrating to Postgres/Supabase later:
+// change datasource provider to "postgresql" and DATABASE_URL — the models below
+// are written to port cleanly (no SQLite-only features). Enums are modelled as
+// String + app-level validation because SQLite has no native enums.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// role: customer | worker | admin
+model User {
+  id           String   @id @default(cuid())
+  role         String
+  username     String   @unique
+  phone        String?
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  workerProfile WorkerProfile?
+  jobsPosted    Job[]          @relation("CustomerJobs")
+  bids          Bid[]
+  ratingsGiven  Rating[]       @relation("RaterRatings")
+  ratingsGot    Rating[]       @relation("RateeRatings")
+}
+
+/// verificationStatus: pending | interviewed | trial | approved | rejected
+/// walletMode: postpaid | prepaid
+model WorkerProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  trade              String
+  zone               String
+  ratingSum          Int      @default(0)
+  ratingCount        Int      @default(0)
+  jobsCompleted      Int      @default(0)
+  strikes            Int      @default(0)
+  suspended          Boolean  @default(false)
+  verificationStatus String   @default("pending")
+  walletMode         String   @default("postpaid")
+  createdAt          DateTime @default(now())
+}
+
+/// urgency: standard | priority
+/// status: open | accepted | completed | cancel_pending | cancelled
+/// commissionBucket: held | debt | ""  (which balance the commission sits in)
+model Job {
+  id               String    @id @default(cuid())
+  customerId       String
+  customer         User      @relation("CustomerJobs", fields: [customerId], references: [id])
+  trade            String
+  description      String
+  photos           String    @default("[]") // JSON array of URLs/placeholders
+  zone             String
+  budgetOfferPst   Int
+  urgency          String    @default("standard")
+  status           String    @default("open")
+  acceptedBidId    String?
+  acceptedWorkerId String?
+  commissionPst    Int       @default(0)
+  commissionBucket String    @default("")
+  contactedBeforeCancel Boolean @default(false)
+  cancelledBy      String?
+  createdAt        DateTime  @default(now())
+  completedAt      DateTime?
+
+  bids    Bid[]
+  ratings Rating[]
+}
+
+/// status: active | accepted | rejected | withdrawn
+model Bid {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id])
+  workerId  String
+  worker    User     @relation(fields: [workerId], references: [id])
+  pricePst  Int
+  etaMin    Int
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, workerId]) // one live bid per worker per job
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id])
+  raterId   String
+  rater     User     @relation("RaterRatings", fields: [raterId], references: [id])
+  rateeId   String
+  ratee     User     @relation("RateeRatings", fields: [rateeId], references: [id])
+  stars     Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+/// Prepaid service credit — one account per worker. Money in integer piasters.
+model ServiceCreditAccount {
+  id           String   @id @default(cuid())
+  workerId     String   @unique
+  availablePst Int      @default(0)
+  heldPst      Int      @default(0)
+  debtPst      Int      @default(0)
+
+  txns ServiceCreditTxn[]
+}
+
+/// Immutable ledger — rows are append-only; corrections are new 'adjustment' rows.
+/// type: topup | hold | capture | release | adjustment | refund
+/// bucket: available | held | debt
+model ServiceCreditTxn {
+  id        String   @id @default(cuid())
+  accountId String
+  account   ServiceCreditAccount @relation(fields: [accountId], references: [id])
+  type      String
+  amountPst Int
+  jobId     String?
+  bucket    String   @default("")
+  note      String   @default("")
+  createdAt DateTime @default(now())
+}
+
+/// status: pending | confirmed
+model TopupRequest {
+  id        String   @id @default(cuid())
+  workerId  String
+  amountPst Int
+  method    String
+  ref       String   @unique
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
+
+/// Admin-editable config — every business rule reads from here, nothing hardcoded.
+model AdminConfig {
+  key   String @id
+  value String
+}
