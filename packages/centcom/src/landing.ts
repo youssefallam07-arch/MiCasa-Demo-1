@@ -41,13 +41,12 @@ code{font-family:'Consolas',monospace;background:rgba(120,160,255,.08);color:var
 <h2>Test logins</h2>
 <table>
 <tr><th>Role</th><th>Open in</th><th>Username</th><th>Password</th><th>Notes</th></tr>
-<tr><td><span class="role a">ADMIN</span></td><td>CIC</td><td><code>youssef_hq</code></td><td><code>LrOXxFPAf9CuHY29KTxx</code></td><td>Full control panel</td></tr>
 <tr><td><span class="role c">CUSTOMER</span></td><td>Customer</td><td><code>mona</code></td><td><code>password123</code></td><td>Has existing jobs</td></tr>
 <tr><td><span class="role c">CUSTOMER</span></td><td>Customer</td><td><code>khaled</code></td><td><code>password123</code></td><td>Has existing jobs</td></tr>
 <tr><td><span class="role w">WORKER</span></td><td>Workers</td><td><code>ahmed</code></td><td><code>password123</code></td><td>Approved · funded · can bid now</td></tr>
 <tr><td><span class="role w">WORKER</span></td><td>Workers</td><td><code>mahmoud</code></td><td><code>password123</code></td><td>Approved · postpaid grace</td></tr>
 <tr><td><span class="role w">WORKER</span></td><td>Workers</td><td><code>saeed</code></td><td><code>password123</code></td><td>Pending — approve him in CIC</td></tr>
 </table>
-<div class="note">Try the full loop: as <b>mona</b> post a plumbing job in المعادي → as <b>ahmed</b> bid on it → back to mona, accept → ahmed marks done → mona confirms & rates → watch it live in CIC.<br>Demo data · you can reset anytime.</div>
+<div class="note">Admin (CIC / CENTCOM) credentials are not published — they live in <b>docs/FIRST_LOGIN.md</b> on the host machine (gitignored).<br>Try the full loop: as <b>mona</b> post a plumbing job in المعادي → as <b>ahmed</b> bid on it → back to mona, accept → ahmed marks done → mona confirms & rates → watch it live in CIC.<br>Demo data · you can reset anytime.</div>
 </div></body></html>`;
 }

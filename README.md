@@ -9,18 +9,15 @@ prepaid service-credit wallet. Built as a clean **Mainframe → Centcom → Apps
 
 ---
 
-## 🚀 Live demo — open it now
+## 🚀 Live demo
 
-### ➡️ **[OPEN CENTCOM / Admin Control Center](https://nearest-badly-wives-balance.trycloudflare.com/cic/)**
+The demo is served from a dev machine over a temporary Cloudflare tunnel, so the public URL
+changes on every restart and is **not pinned here** — run `./start-online.ps1` to build,
+serve, and print a fresh link (it opens a landing page with every app). Ping Youssef for the
+current link; a permanent always-on deployment is on the [Roadmap](#roadmap).
 
-Sign in with **`youssef_hq`** / **`LrOXxFPAf9CuHY29KTxx`**.
-
-Or open the **[full app menu](https://nearest-badly-wives-balance.trycloudflare.com/)** to jump into the
-Customer or Workers app too (all logins are listed on that page).
-
-> ⚠️ **Temporary demo link.** It's served live from a dev machine and is only up while the
-> demo is running — and the URL changes on each restart. If it's down, ping Youssef for the
-> current link. A permanent always-on link is on the [Roadmap](#roadmap).
+Admin credentials are generated randomly by the seed and written **only** to the gitignored
+`docs/FIRST_LOGIN.md` — they are never committed or published.
 
 ---
 

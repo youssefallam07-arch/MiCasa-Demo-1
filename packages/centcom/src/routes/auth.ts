@@ -30,10 +30,25 @@ authRouter.post('/register', body(registerSchema), h(async (req, res) => {
   res.json({ ok: true, token, user: { id: user.id, role: user.role, name: user.name } });
 }));
 
+// Per-username lockout: 10 failed attempts -> locked for 15 minutes.
+const LOCK_AFTER = 10;
+const LOCK_MS = 15 * 60 * 1000;
+const loginFails = new Map<string, { count: number; lockedUntil: number }>();
+
 authRouter.post('/login', body(z.object({ username: z.string(), password: z.string() })), h(async (req, res) => {
   const { username, password } = req.body;
+  const f = loginFails.get(username);
+  if (f && f.lockedUntil > Date.now()) return res.status(429).json({ error: 'account_locked' });
   const user = await prisma.user.findUnique({ where: { username } });
-  if (!user || !bcrypt.compareSync(password, user.passwordHash)) return res.status(401).json({ error: 'invalid_credentials' });
+  if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
+    const cur = f ?? { count: 0, lockedUntil: 0 };
+    if (cur.lockedUntil && cur.lockedUntil <= Date.now()) { cur.count = 0; cur.lockedUntil = 0; } // lock expired -> fresh window
+    cur.count += 1;
+    if (cur.count >= LOCK_AFTER) cur.lockedUntil = Date.now() + LOCK_MS;
+    loginFails.set(username, cur);
+    return res.status(401).json({ error: 'invalid_credentials' });
+  }
+  loginFails.delete(username);
   const token = signToken({ sub: user.id, role: user.role, name: user.name });
   res.json({ ok: true, token, user: { id: user.id, role: user.role, name: user.name } });
 }));

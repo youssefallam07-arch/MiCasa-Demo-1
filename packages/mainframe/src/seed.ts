@@ -25,6 +25,11 @@ async function wipe() {
 }
 
 async function main() {
+  // the seed WIPES the entire database — never allowed against production data
+  if (process.env.NODE_ENV === 'production' && !process.env.FORCE_SEED) {
+    console.error('Refusing to seed: NODE_ENV=production and seeding wipes all data. Set FORCE_SEED=1 to override.');
+    process.exit(1);
+  }
   await wipe();
   await seedConfigDefaults();
 

@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ENV } from './env';
@@ -15,14 +17,32 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const appsDir = path.resolve(here, '../../../apps');
 
 const app = express();
-app.use(cors());
+app.set('trust proxy', 1); // behind the cloudflared tunnel — needed for per-IP rate limiting
+app.use(helmet({
+  contentSecurityPolicy: { useDefaults: true, directives: { 'upgrade-insecure-requests': null } },
+}));
+app.use(cors({
+  origin: (origin, cb) => cb(null, !origin || ENV.CORS_ORIGINS.includes(origin)),
+}));
 app.use(express.json({ limit: '2mb' }));
 app.use(authenticate);
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'centcom' }));
 
+// Brute-force guard: only FAILED attempts count (skipSuccessfulRequests), so
+// normal sign-ins are unaffected while credential guessing hits 429 fast.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  skipSuccessfulRequests: true,
+  skip: (req) => req.method === 'GET', // /me etc.
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too_many_attempts' },
+});
+
 // ---- API under /api (so app paths like /customer don't collide) ----
-app.use('/api/auth', authRouter);
+app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/customer', customerRouter);
 app.use('/api/worker', workerRouter);
 app.use('/api/admin', adminRouter);
