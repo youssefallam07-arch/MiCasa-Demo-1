@@ -110,4 +110,67 @@ export async function dashboard() {
   };
 }
 
+// ---- CENTCOM: full account registry (every signup, every role, persistent) ----
+export async function allAccounts() {
+  const users = await prisma.user.findMany({ orderBy: { createdAt: 'desc' }, include: { workerProfile: true } });
+  const out = [];
+  for (const u of users) {
+    let credit = null;
+    if (u.role === 'worker') credit = await prisma.serviceCreditAccount.findUnique({ where: { workerId: u.id } });
+    const [jobsPosted, bidsMade] = await Promise.all([
+      u.role === 'customer' ? prisma.job.count({ where: { customerId: u.id } }) : Promise.resolve(0),
+      u.role === 'worker' ? prisma.bid.count({ where: { workerId: u.id } }) : Promise.resolve(0),
+    ]);
+    out.push({
+      id: u.id, role: u.role, username: u.username, name: u.name, phone: u.phone, createdAt: u.createdAt,
+      trade: u.workerProfile?.trade ?? null, zone: u.workerProfile?.zone ?? null,
+      verificationStatus: u.workerProfile?.verificationStatus ?? null,
+      walletMode: u.workerProfile?.walletMode ?? null, suspended: u.workerProfile?.suspended ?? null,
+      jobsCompleted: u.workerProfile?.jobsCompleted ?? null,
+      availablePst: credit?.availablePst ?? null, heldPst: credit?.heldPst ?? null, debtPst: credit?.debtPst ?? null,
+      jobsPosted, bidsMade,
+    });
+  }
+  return out;
+}
+
+export async function platformOverview() {
+  const [customers, workers, admins, jobs, completed, open, captured] = await Promise.all([
+    prisma.user.count({ where: { role: 'customer' } }),
+    prisma.user.count({ where: { role: 'worker' } }),
+    prisma.user.count({ where: { role: 'admin' } }),
+    prisma.job.count(), prisma.job.count({ where: { status: 'completed' } }),
+    prisma.job.count({ where: { status: 'open' } }),
+    prisma.serviceCreditTxn.aggregate({ _sum: { amountPst: true }, where: { type: 'capture' } }),
+  ]);
+  return {
+    customers, workers, admins, totalAccounts: customers + workers + admins,
+    jobs, completed, open, commissionCapturedPst: captured._sum.amountPst ?? 0,
+    pendingVetting: (await verificationQueue()).length,
+  };
+}
+
+// Permanently delete an account and everything it owns (only way a record leaves the DB).
+export async function deleteAccount(userId: string) {
+  return prisma.$transaction(async (tx) => {
+    const u = await tx.user.findUnique({ where: { id: userId } });
+    if (!u) throw err('not_found', 404);
+    if (u.role === 'admin') {
+      const admins = await tx.user.count({ where: { role: 'admin' } });
+      if (admins <= 1) throw err('cannot_delete_last_admin', 409);
+    }
+    const ownedJobs = await tx.job.findMany({ where: { customerId: userId }, select: { id: true } });
+    const jobIds = ownedJobs.map((j) => j.id);
+    await tx.rating.deleteMany({ where: { OR: [{ raterId: userId }, { rateeId: userId }, { jobId: { in: jobIds } }] } });
+    await tx.bid.deleteMany({ where: { OR: [{ workerId: userId }, { jobId: { in: jobIds } }] } });
+    const acc = await tx.serviceCreditAccount.findUnique({ where: { workerId: userId } });
+    if (acc) { await tx.serviceCreditTxn.deleteMany({ where: { accountId: acc.id } }); await tx.serviceCreditAccount.delete({ where: { id: acc.id } }); }
+    await tx.topupRequest.deleteMany({ where: { workerId: userId } });
+    await tx.workerProfile.deleteMany({ where: { userId } });
+    await tx.job.deleteMany({ where: { customerId: userId } });
+    await tx.user.delete({ where: { id: userId } });
+    return { ok: true, deleted: u.username };
+  });
+}
+
 export { getConfig, setConfig, confirmTopup, releaseHold };

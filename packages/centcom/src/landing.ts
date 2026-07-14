@@ -35,7 +35,8 @@ code{font-family:'Consolas',monospace;background:rgba(120,160,255,.08);color:var
 <div class="apps">
   <a class="app c" href="/customer/"><div class="ic">👤</div><b>Customer App</b><span>Post a job, view bids, accept, rate. (Arabic)</span><div class="go">Open →</div></a>
   <a class="app w" href="/workers/"><div class="ic">🔧</div><b>Workers App</b><span>Job feed, place bids, wallet & earnings. (Arabic)</span><div class="go">Open →</div></a>
-  <a class="app a" href="/cic/"><div class="ic">🛡️</div><b>CIC — Admin</b><span>Dashboard, verification, wallets, config.</span><div class="go">Open →</div></a>
+  <a class="app a" href="/cic/"><div class="ic">🛡️</div><b>CIC — Admin ops</b><span>Dashboard, verification, wallets, config.</span><div class="go">Open →</div></a>
+  <a class="app a" href="/centcom/"><div class="ic">🎛️</div><b>CENTCOM — Owner</b><span>Master terminal · every account, full control.</span><div class="go">Open →</div></a>
 </div>
 <h2>Test logins</h2>
 <table>

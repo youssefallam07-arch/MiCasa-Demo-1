@@ -17,6 +17,11 @@ adminRouter.get('/releases', h(async (_req, res) => res.json({ releases: await a
 adminRouter.get('/jobs', h(async (_req, res) => res.json({ jobs: await admin.jobsTable() })));
 adminRouter.get('/config', h(async (_req, res) => res.json({ config: await admin.getConfig() })));
 
+// ---- CENTCOM (owner master view) ----
+adminRouter.get('/registry', h(async (_req, res) => res.json({ accounts: await admin.allAccounts() })));
+adminRouter.get('/overview', h(async (_req, res) => res.json(await admin.platformOverview())));
+adminRouter.delete('/users/:id', h(async (req, res) => res.json(await admin.deleteAccount(req.params.id))));
+
 adminRouter.post('/workers/:id/verify', body(z.object({ status: z.enum(['pending', 'interviewed', 'trial', 'approved', 'rejected']) })), h(async (req, res) => {
   res.json(await admin.setVerification(req.params.id, req.body.status));
 }));

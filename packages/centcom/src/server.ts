@@ -28,7 +28,7 @@ app.use('/api/worker', workerRouter);
 app.use('/api/admin', adminRouter);
 
 // ---- serve the three built apps (run `npm run build:apps` first) ----
-for (const a of ['customer', 'workers', 'cic']) {
+for (const a of ['customer', 'workers', 'cic', 'centcom']) {
   const dist = path.join(appsDir, a, 'dist');
   app.use(`/${a}`, express.static(dist));
   app.get(`/${a}`, (_req, res) => res.redirect(`/${a}/`)); // no-slash -> slash
