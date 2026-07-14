@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { requireRole } from '../auth';
+import { requireRole, signImpersonation } from '../auth';
 import { h, body } from '../helpers';
 import { admin, prisma } from '../core';
 import { buildRegistryWorkbook } from '../registry-xlsx';
@@ -31,6 +31,14 @@ adminRouter.get('/registry.xlsx', h(async (_req, res) => {
   res.end();
 }));
 adminRouter.delete('/users/:id', h(async (req, res) => res.json(await admin.deleteAccount(req.params.id))));
+
+// "Open as" — mint a short-lived token to log in as any account (no password needed/stored).
+adminRouter.post('/users/:id/impersonate', h(async (req, res) => {
+  const u = await prisma.user.findUnique({ where: { id: req.params.id } });
+  if (!u) return res.status(404).json({ error: 'not_found' });
+  const token = signImpersonation({ sub: u.id, role: u.role, name: u.name }, req.user!.sub);
+  res.json({ token, user: { id: u.id, role: u.role, name: u.name, username: u.username } });
+}));
 
 adminRouter.post('/workers/:id/verify', body(z.object({ status: z.enum(['pending', 'interviewed', 'trial', 'approved', 'rejected']) })), h(async (req, res) => {
   res.json(await admin.setVerification(req.params.id, req.body.status));

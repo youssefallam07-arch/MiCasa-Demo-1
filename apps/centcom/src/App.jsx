@@ -93,6 +93,14 @@ function Registry({ accounts, me, reload }) {
     try { await api('/admin/users/' + a.id, 'DELETE'); reload(); }
     catch (e) { alert(e.data?.error === 'cannot_delete_last_admin' ? 'Cannot delete the last admin.' : 'Error: ' + (e.data?.error || 'failed')); }
   }
+  async function openAs(a) {
+    try {
+      const r = await api('/admin/users/' + a.id + '/impersonate', 'POST');
+      const app = a.role === 'customer' ? 'customer' : a.role === 'worker' ? 'workers' : 'cic';
+      const payload = encodeURIComponent(JSON.stringify({ token: r.token, user: r.user }));
+      window.open('/' + app + '/#imp=' + payload, '_blank', 'noopener');
+    } catch { alert('Could not open that account.'); }
+  }
   const [dl, setDl] = useState(false);
   async function excel() {
     setDl(true);
@@ -112,12 +120,12 @@ function Registry({ accounts, me, reload }) {
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {roles.map((r) => <button key={r} className={'act ' + (filter === r ? '' : 'ghost')} onClick={() => setFilter(r)}>{r === 'all' ? 'All' : r + 's'} {r !== 'all' ? '(' + accounts.filter((a) => a.role === r).length + ')' : '(' + accounts.length + ')'}</button>)}
       </div>
-      <div className="card"><AccountTable accounts={list} showActions me={me} onDelete={del} /></div>
+      <div className="card"><AccountTable accounts={list} showActions me={me} onDelete={del} onOpenAs={openAs} /></div>
     </>
   );
 }
 
-function AccountTable({ accounts, showActions, me, onDelete }) {
+function AccountTable({ accounts, showActions, me, onDelete, onOpenAs }) {
   if (!accounts.length) return <div className="empty">No accounts.</div>;
   const rolePill = (r) => r === 'admin' ? 'gold' : r === 'worker' ? 'on' : 'blue';
   return (
@@ -139,7 +147,12 @@ function AccountTable({ accounts, showActions, me, onDelete }) {
             {a.role === 'admin' && <span style={{ color: 'var(--muted)' }}>full control</span>}
           </td>
           <td style={{ color: 'var(--muted)', fontSize: 11 }}>{new Date(a.createdAt).toLocaleString()}</td>
-          {showActions && <td>{a.id === me.sub ? <span style={{ color: 'var(--muted)', fontSize: 11 }}>you</span> : <button className="act red" onClick={() => onDelete(a)}>Delete</button>}</td>}
+          {showActions && <td>{a.id === me.sub ? <span style={{ color: 'var(--muted)', fontSize: 11 }}>you</span> : (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button className="act ghost" onClick={() => onOpenAs(a)} title="Log in as this account in a new tab">Open as</button>
+              <button className="act red" onClick={() => onDelete(a)}>Delete</button>
+            </div>
+          )}</td>}
         </tr>
       ))}</tbody>
     </table></div>
