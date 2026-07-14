@@ -9,6 +9,21 @@ prepaid service-credit wallet. Built as a clean **Mainframe → Centcom → Apps
 
 ---
 
+## 🚀 Live demo — open it now
+
+### ➡️ **[OPEN CENTCOM / Admin Control Center](https://nearest-badly-wives-balance.trycloudflare.com/cic/)**
+
+Sign in with **`youssef_hq`** / **`LrOXxFPAf9CuHY29KTxx`**.
+
+Or open the **[full app menu](https://nearest-badly-wives-balance.trycloudflare.com/)** to jump into the
+Customer or Workers app too (all logins are listed on that page).
+
+> ⚠️ **Temporary demo link.** It's served live from a dev machine and is only up while the
+> demo is running — and the URL changes on each restart. If it's down, ping Youssef for the
+> current link. A permanent always-on link is on the [Roadmap](#roadmap).
+
+---
+
 ## What's inside
 
 | Surface | Folder | What it does |
