@@ -9,7 +9,8 @@
   "scripts": {
     "generate": "prisma generate",
     "db:push": "prisma db push --skip-generate --accept-data-loss",
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx src/seed.ts",
+    "seed:boot": "tsx src/seed.ts --if-empty"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

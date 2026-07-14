@@ -25,8 +25,16 @@ async function wipe() {
 }
 
 async function main() {
+  const existingUsers = await prisma.user.count();
+  // Hosted demos run the seed on every boot (`npm start`) — only fill an
+  // empty database, never touch live accounts.
+  const ifEmpty = process.argv.includes('--if-empty') || process.env.SEED_IF_EMPTY;
+  if (ifEmpty && existingUsers > 0) {
+    console.log(`Seed skipped: database already has ${existingUsers} users (--if-empty).`);
+    return;
+  }
   // the seed WIPES the entire database — never allowed against production data
-  if (process.env.NODE_ENV === 'production' && !process.env.FORCE_SEED) {
+  if (existingUsers > 0 && process.env.NODE_ENV === 'production' && !process.env.FORCE_SEED) {
     console.error('Refusing to seed: NODE_ENV=production and seeding wipes all data. Set FORCE_SEED=1 to override.');
     process.exit(1);
   }
@@ -34,7 +42,7 @@ async function main() {
   await seedConfigDefaults();
 
   // ---- admin (the one account with direct editorial access) ----
-  const adminPw = randomPw();
+  const adminPw = process.env.ADMIN_PASSWORD || randomPw();
   await prisma.user.create({ data: { role: 'admin', username: 'youssef_hq', name: 'Youssef HQ', passwordHash: hash(adminPw) } });
 
   // ---- customers (known password for local testing) ----

@@ -17,7 +17,9 @@
     "dev:customer": "npm --workspace @vp/customer run dev",
     "dev:workers": "npm --workspace @vp/workers run dev",
     "build:apps": "npm --workspace @vp/customer run build && npm --workspace @vp/workers run build && npm --workspace @vp/cic run build && npm --workspace @vp/centcom-ui run build",
-    "serve": "npm --workspace @vp/centcom run start"
+    "serve": "npm --workspace @vp/centcom run start",
+    "start": "npm run db:setup && npm run seed:boot && npm run serve",
+    "seed:boot": "npm --workspace @vp/mainframe run seed:boot"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

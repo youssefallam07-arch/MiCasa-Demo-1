@@ -15,7 +15,8 @@ if (!secret || WEAK_SECRETS.has(secret)) {
 }
 
 export const ENV = {
-  PORT: Number(process.env.CENTCOM_PORT || 4000),
+  // hosted platforms (Render/Railway) inject PORT; locally we use CENTCOM_PORT
+  PORT: Number(process.env.PORT || process.env.CENTCOM_PORT || 4000),
   JWT_SECRET: secret,
   JWT_EXPIRES: process.env.JWT_EXPIRES || '12h',
   CORS_ORIGINS: (process.env.CORS_ORIGINS ||
