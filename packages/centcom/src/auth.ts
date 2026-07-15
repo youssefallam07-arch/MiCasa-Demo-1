@@ -25,10 +25,13 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
 }
 
 // Require a logged-in user with one of the given roles.
+// The 'admin' owner is a superuser: their login passes every role gate, so the
+// single admin credential has full access to all portals (customer/worker/admin).
+// (Impersonation tokens carry the target's own role, so "Open as" does NOT inherit this.)
 export function requireRole(...roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: 'unauthorized' });
-    if (roles.length && !roles.includes(req.user.role)) return res.status(403).json({ error: 'forbidden' });
+    if (roles.length && !roles.includes(req.user.role) && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
     next();
   };
 }

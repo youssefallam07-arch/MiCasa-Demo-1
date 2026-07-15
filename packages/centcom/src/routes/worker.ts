@@ -7,6 +7,22 @@ import { listOpenJobsFor, submitBid, myJobsWorker, markComplete, cancelByWorker,
 export const workerRouter = Router();
 workerRouter.use(requireRole('worker'));
 
+// Owner superuser: an admin browsing the Workers app has no worker profile by
+// default, which would break the feed/wallet. Lazily provision one (approved,
+// prepaid) the first time. Worker listings filter on user.role='worker', so the
+// admin never pollutes the marketplace or verification queue.
+workerRouter.use((req, res, next) => {
+  if (req.user!.role !== 'admin') return next();
+  (async () => {
+    const existing = await prisma.workerProfile.findUnique({ where: { userId: req.user!.sub } });
+    if (!existing) {
+      await prisma.workerProfile.create({ data: { userId: req.user!.sub, trade: 'handyman', zone: 'المعادي', verificationStatus: 'approved', walletMode: 'prepaid' } }).catch(() => {});
+      await prisma.serviceCreditAccount.create({ data: { workerId: req.user!.sub } }).catch(() => {});
+    }
+    next();
+  })().catch(next);
+});
+
 workerRouter.get('/me', h(async (req, res) => {
   const wp = await prisma.workerProfile.findUnique({ where: { userId: req.user!.sub } });
   res.json({ profile: wp });
