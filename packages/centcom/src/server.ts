@@ -48,12 +48,15 @@ app.use('/api/customer', customerRouter);
 app.use('/api/worker', workerRouter);
 app.use('/api/admin', adminRouter);
 
-// ---- built React apps (admin surfaces) ----
-for (const a of ['cic', 'centcom']) {
+// ---- built React admin apps ----
+for (const a of ['cic']) {
   const dist = path.join(appsDir, a, 'dist');
   app.use(`/${a}`, express.static(dist));
   app.get(`/${a}`, (_req, res) => res.redirect(`/${a}/`)); // no-slash -> slash
 }
+// React CENTCOM kept as a fallback for Open-as / set-password tooling.
+app.use('/centcom-classic', express.static(path.join(appsDir, 'centcom', 'dist')));
+app.get('/centcom-classic', (_req, res) => res.redirect('/centcom-classic/'));
 
 // ---- the real MiCasa single-file apps (customer + worker), wired to /api ----
 // First-party static apps that rely on inline scripts + a few known CDNs (Leaflet,
@@ -74,8 +77,9 @@ function serveMicasa(route: string, dir: string) {
   app.use(route, express.static(full));
   app.get(route, (_req, res) => res.redirect(route + '/'));
 }
-serveMicasa('/customer', 'micasa');        // the polished customer app
-serveMicasa('/workers', 'micasa-worker');  // the polished worker app
+serveMicasa('/customer', 'micasa');           // the polished customer app
+serveMicasa('/workers', 'micasa-worker');     // the polished worker app
+serveMicasa('/centcom', 'micasa-centcom');    // the polished owner terminal
 
 // ---- landing page: one menu to open every app, with test logins ----
 app.get('/', (_req, res) => res.type('html').send(landingHtml()));

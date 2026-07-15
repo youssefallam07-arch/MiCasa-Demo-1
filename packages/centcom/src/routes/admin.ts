@@ -50,6 +50,17 @@ adminRouter.post('/moderators', body(z.object({ username: z.string().min(3).max(
   res.json(await admin.createModerator(req.body.username, req.body.name, req.body.password));
 }));
 
+// ---- Original CENTCOM terminal endpoints ----
+adminRouter.get('/centcom-overview', h(async (_req, res) => res.json(await admin.centcomOverview())));
+adminRouter.post('/register-worker', body(z.object({
+  name: z.string().min(2), phone: z.string().optional(), trade: z.string().optional(), zone: z.string().optional(),
+  nationalId: z.string().optional(), guarantorName: z.string().optional(), guarantorPhone: z.string().optional(),
+  idPhoto: z.string().optional(), approve: z.boolean().optional(),
+})), h(async (req, res) => res.json(await admin.registerWorker(req.body))));
+adminRouter.post('/change-password', body(z.object({ old: z.string(), new: z.string().min(6) })), h(async (req, res) => {
+  res.json(await admin.changeOwnerPassword(req.user!.sub, req.body.old, req.body.new));
+}));
+
 // "Open as" — mint a short-lived token to log in as any account (no password needed/stored).
 adminRouter.post('/users/:id/impersonate', h(async (req, res) => {
   const u = await prisma.user.findUnique({ where: { id: req.params.id } });
