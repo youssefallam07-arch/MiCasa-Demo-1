@@ -9,15 +9,32 @@ prepaid service-credit wallet. Built as a clean **Mainframe → Centcom → Apps
 
 ---
 
-## 🚀 Live demo
+## 🚀 Live demo — portal links
 
-The demo is served from a dev machine over a temporary Cloudflare tunnel, so the public URL
-changes on every restart and is **not pinned here** — run `./start-online.ps1` to build,
-serve, and print a fresh link (it opens a landing page with every app). Ping Youssef for the
-current link; a permanent always-on deployment is on the [Roadmap](#roadmap).
+Always-on deployment: **https://micasa-demo-1.onrender.com**
 
-Admin credentials are generated randomly by the seed and written **only** to the gitignored
-`docs/FIRST_LOGIN.md` — they are never committed or published.
+| Portal | Open | Who it's for |
+|---|---|---|
+| 🏠 **Launchpad** | **[micasa-demo-1.onrender.com](https://micasa-demo-1.onrender.com/)** | Menu to every app + demo logins |
+| 👤 **Customer app** | **[/customer](https://micasa-demo-1.onrender.com/customer/)** | Post jobs, view bids, accept, rate (Arabic) |
+| 🔧 **Workers app** | **[/workers](https://micasa-demo-1.onrender.com/workers/)** | Job feed, bidding, wallet & earnings (Arabic) |
+| 🛡️ **CIC — Admin ops** | **[/cic](https://micasa-demo-1.onrender.com/cic/)** | Verification, wallets, top-ups, releases, config |
+| 🎛️ **CENTCOM — Owner** | **[/centcom](https://micasa-demo-1.onrender.com/centcom/)** | Master terminal — every account, Open-as, Excel export |
+
+**Demo logins** (also listed on the Launchpad):
+
+| Role | Username | Password |
+|---|---|---|
+| Customer | `mona` / `khaled` | `password123` |
+| Worker | `ahmed` (funded) · `mahmoud` (postpaid) · `saeed` (pending) | `password123` |
+| Admin (CIC / CENTCOM) | `youssef_hq` | *not published — see below* |
+
+> **Admin password** is generated per-deployment and is **never committed**. Locally it's in the
+> gitignored `docs/FIRST_LOGIN.md`; on Render it's the `ADMIN_PASSWORD` env var (or printed in the
+> service **Logs** on first boot).
+>
+> ⏳ **First open may take ~50s** — the free Render instance spins down when idle and cold-starts on
+> the next request. Data also resets on restart until the Postgres migration ([Roadmap](#roadmap)).
 
 ---
 
