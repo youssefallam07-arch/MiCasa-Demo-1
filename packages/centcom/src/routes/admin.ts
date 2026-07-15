@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { z } from 'zod';
 import { requireRole, signImpersonation } from '../auth';
 import { h, body } from '../helpers';
-import { admin, prisma, forceComplete, forceCancel } from '../core';
+import { admin, prisma, forceComplete, forceCancel, recordStaffCredential, getStaffCredentials } from '../core';
 import { buildRegistryWorkbook } from '../registry-xlsx';
 
 export const adminRouter = Router();
@@ -41,7 +41,13 @@ adminRouter.post('/users/:id/set-password', body(z.object({ password: z.string()
   if (!u) return res.status(404).json({ error: 'not_found' });
   const password = req.body.password || genPassword();
   await prisma.user.update({ where: { id: u.id }, data: { passwordHash: bcrypt.hashSync(password, 10) } });
+  if (u.role === 'admin') recordStaffCredential(u.id, u.username, u.name, password); // owner/mods only
   res.json({ ok: true, username: u.username, password });
+}));
+
+// Create a moderator (admin account) with an owner-set password (recorded to staff file).
+adminRouter.post('/moderators', body(z.object({ username: z.string().min(3).max(64), name: z.string().min(2), password: z.string().min(8) })), h(async (req, res) => {
+  res.json(await admin.createModerator(req.body.username, req.body.name, req.body.password));
 }));
 
 // "Open as" — mint a short-lived token to log in as any account (no password needed/stored).

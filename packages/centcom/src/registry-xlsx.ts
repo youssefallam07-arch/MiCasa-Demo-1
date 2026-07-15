@@ -1,12 +1,12 @@
 // Live account-registry workbook. Built fresh from the database on every call,
 // so any copy is a current snapshot — nothing is cached or hand-maintained.
 //
-// NOTE ON PASSWORDS: user passwords are stored only as one-way bcrypt hashes and
-// cannot be recovered, so they are deliberately NOT in this workbook. The only
-// plaintext credentials that exist are the non-secret demo logins (shown on a
-// reference sheet) and the admin password (kept in gitignored docs/FIRST_LOGIN.md).
+// NOTE ON PASSWORDS: regular-user passwords are stored only as one-way bcrypt hashes
+// and are deliberately NOT in this workbook. The "Owners & Moderators" sheet shows
+// admin/staff passwords the OWNER set — read from the gitignored staff-credentials
+// file (never the DB, never git, admin accounts only). Regular users are never shown.
 import ExcelJS from 'exceljs';
-import { prisma, admin } from './core';
+import { prisma, admin, getStaffCredentials } from './core';
 
 const FONT = 'Arial';
 const pst = (v: number | null | undefined) => (v == null ? null : v / 100); // piasters -> EGP number
@@ -114,17 +114,35 @@ export async function buildRegistryWorkbook(): Promise<ExcelJS.Workbook> {
     })),
   );
 
-  // ---- Admins ----
+  // ---- Owners & Moderators (admin accounts, WITH passwords the owner set) ----
+  const staff = getStaffCredentials();
+  const om = wb.addWorksheet('Owners & Moderators', { properties: { tabColor: { argb: 'FFD9B36A' } } });
   addTable(
-    wb.addWorksheet('Admins', { properties: { tabColor: { argb: 'FFD9B36A' } } }),
+    om,
     [
-      { header: 'Name', key: 'name' }, { header: 'Username', key: 'username' }, { header: 'Phone', key: 'phone' },
+      { header: 'Role', key: 'role' }, { header: 'Name', key: 'name' }, { header: 'Username', key: 'username' },
+      { header: 'Password', key: 'password' }, { header: 'Phone', key: 'phone' },
+      { header: 'Password set', key: 'setAt', fmt: 'yyyy-mm-dd hh:mm' },
       { header: 'Created', key: 'createdAt', fmt: 'yyyy-mm-dd hh:mm' }, { header: 'User ID', key: 'id' },
     ],
-    accounts.filter((a) => a.role === 'admin').map((a) => ({
-      name: a.name, username: a.username, phone: a.phone ?? '—', createdAt: new Date(a.createdAt), id: a.id,
-    })),
+    accounts.filter((a) => a.role === 'admin').map((a) => {
+      const cred = staff[a.id];
+      const ownerName = process.env.ADMIN_USERNAME || 'youssef_hq';
+      return {
+        role: a.username === ownerName ? 'owner' : 'moderator', name: a.name, username: a.username,
+        password: cred ? cred.password : '(not recorded — use Set-pw to capture it)',
+        phone: a.phone ?? '—', setAt: cred ? new Date(cred.setAt) : null,
+        createdAt: new Date(a.createdAt), id: a.id,
+      };
+    }),
   );
+  const omNote = om.addRow({});
+  om.mergeCells(`A${omNote.number}:H${omNote.number}`);
+  om.getCell(`A${omNote.number}`).value =
+    'Passwords here are staff credentials the OWNER set, read from a gitignored owner-only file (never the database, never git). Regular customer/worker passwords are one-way hashed and can never be shown. Keep this file private.';
+  om.getCell(`A${omNote.number}`).font = { name: FONT, italic: true, size: 9, color: { argb: 'FFB98F3E' } };
+  om.getCell(`A${omNote.number}`).alignment = { wrapText: true };
+  om.getRow(omNote.number).height = 42;
 
   // ---- Demo logins (reference: only non-secret demo passwords) ----
   const d = wb.addWorksheet('Demo logins', { properties: { tabColor: { argb: 'FF7E92B4' } } });

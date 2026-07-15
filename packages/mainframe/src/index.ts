@@ -5,4 +5,5 @@ export * from './errors';
 export * from './config';
 export * from './credit';
 export * from './marketplace';
+export * from './staff';
 export * as admin from './admin';

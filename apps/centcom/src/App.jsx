@@ -115,6 +115,13 @@ function Registry({ accounts, me, reload }) {
     catch { alert('Export failed.'); }
     finally { setDl(false); }
   }
+  async function addModerator() {
+    const username = window.prompt('New moderator username:'); if (!username) return;
+    const name = window.prompt('Full name:'); if (!name) return;
+    const password = window.prompt('Password for this moderator (min 8 — you will see it in the Excel):'); if (!password) return;
+    try { await api('/admin/moderators', 'POST', { username: username.trim(), name: name.trim(), password }); reload(); alert('Moderator created. Their password is now in the Owners & Moderators sheet of the Excel export.'); }
+    catch (e) { alert(e.data?.error === 'username_taken' ? 'That username is taken.' : 'Error: ' + (e.data?.error || 'failed')); }
+  }
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -122,7 +129,10 @@ function Registry({ accounts, me, reload }) {
           <h2 className="title">Account Registry</h2>
           <div className="sub">Every account ever created, recorded and kept until deleted here. Real records — not demo placeholders.</div>
         </div>
-        <button className="act" onClick={excel} disabled={dl}>{dl ? 'Building…' : '⬇ Excel'}</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="act ghost" onClick={addModerator}>+ Moderator</button>
+          <button className="act" onClick={excel} disabled={dl}>{dl ? 'Building…' : '⬇ Excel'}</button>
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {roles.map((r) => <button key={r} className={'act ' + (filter === r ? '' : 'ghost')} onClick={() => setFilter(r)}>{r === 'all' ? 'All' : r + 's'} {r !== 'all' ? '(' + accounts.filter((a) => a.role === r).length + ')' : '(' + accounts.length + ')'}</button>)}

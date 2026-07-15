@@ -21,3 +21,4 @@ build/
 .DS_Store
 Thumbs.db
 .parked-p2/
+docs/STAFF_CREDENTIALS.json

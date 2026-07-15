@@ -3,6 +3,7 @@ import { prisma } from './db';
 import { getConfig, setConfig } from './config';
 import { confirmTopup } from './credit';
 import { releaseHold } from './marketplace';
+import { recordStaffCredential, removeStaffCredential } from './staff';
 import { err } from './errors';
 
 // Make the admin login deterministic on hosted deploys: if ADMIN_PASSWORD is set,
@@ -16,7 +17,18 @@ export async function reconcileAdminFromEnv() {
   const user = await prisma.user.findUnique({ where: { username } });
   if (!user || user.role !== 'admin') return { skipped: true as const, reason: 'no_admin' };
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash: bcrypt.hashSync(pw, 10) } });
+  recordStaffCredential(user.id, user.username, user.name, pw); // owner credential -> gitignored staff file
   return { updated: true as const, username };
+}
+
+// Create a moderator (admin-role account) with an owner-set password. The password
+// is recorded to the gitignored staff-credentials file so the owner can see it.
+export async function createModerator(username: string, name: string, password: string) {
+  const exists = await prisma.user.findUnique({ where: { username } });
+  if (exists) throw err('username_taken', 409);
+  const user = await prisma.user.create({ data: { role: 'admin', username, name, passwordHash: bcrypt.hashSync(password, 10) } });
+  recordStaffCredential(user.id, username, name, password);
+  return { ok: true, id: user.id, username };
 }
 
 // ---- Worker verification & moderation ----
@@ -189,6 +201,7 @@ export async function deleteAccount(userId: string) {
     await tx.workerProfile.deleteMany({ where: { userId } });
     await tx.job.deleteMany({ where: { customerId: userId } });
     await tx.user.delete({ where: { id: userId } });
+    removeStaffCredential(userId); // keep the staff-credentials file in sync
     return { ok: true, deleted: u.username };
   });
 }
