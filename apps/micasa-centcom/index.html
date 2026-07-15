@@ -396,6 +396,13 @@ function rDash(){
   const max=Math.max(1,...byDay.map(x=>x.v));
   $('#p-dash').innerHTML=`
     <h2 class="title">Command Deck</h2><div class="sub">Live state of the entire MiCasa platform · refreshing every 5s</div>
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(135deg,rgba(18,165,148,.16),rgba(61,214,140,.07));border-color:rgba(61,214,140,.3)">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="ac-ic" style="background:linear-gradient(135deg,#12A594,#3DD68C);width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg class="i" style="width:22px;height:22px;stroke:#04070E"><use href="#i-radio"/></svg></div>
+        <div><b style="font-size:15px">🧠 CIC — The Brain</b><br><span class="mini" style="color:var(--muted)">Intelligence & ops center — health score, anomaly radar, one-click recommendations</span></div>
+      </div>
+      <button class="act" style="flex:0;white-space:nowrap" onclick="window.open('/cic/','_blank')"><svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9"><use href="#i-external"/></svg> Open CIC — The Brain</button>
+    </div>
     <div class="stats">
       ${stat('a',s.customers||0,'Customers')}
       ${stat('',s.workers||0,'Workers')}
@@ -626,6 +633,7 @@ async function saveConfig(){
 
 /* ===== Apps & versions ===== */
 const APPS=[
+  {key:'cic',path:'/cic/',icon:'i-radio',grad:'linear-gradient(135deg,#12A594,#3DD68C)',name:'CIC — The Brain',desc:'Intelligence & ops center — health, anomalies, recommendations',phone:false},
   {key:'customer',path:'/customer/',icon:'i-app',grad:'linear-gradient(135deg,#2563EB,#4D9FFF)',name:'Customer App',desc:'Book services & shop the market — the main MiCasa app',phone:true},
   {key:'worker',path:'/workers/',icon:'i-hardhat',grad:'linear-gradient(135deg,#12A594,#3DD68C)',name:'Driver / Worker Portal',desc:'inDrive-style — go online, bid on jobs, wallet & earnings',phone:true},
   {key:'centcom',path:'/centcom/',icon:'i-shield',grad:'linear-gradient(135deg,#B98F3E,#D9B36A)',name:'CENTCOM',desc:'This control terminal — owner-only command center',phone:true},
