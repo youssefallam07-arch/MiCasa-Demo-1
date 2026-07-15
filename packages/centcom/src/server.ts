@@ -48,18 +48,17 @@ app.use('/api/customer', customerRouter);
 app.use('/api/worker', workerRouter);
 app.use('/api/admin', adminRouter);
 
-// ---- serve the built React apps (run `npm run build:apps` first) ----
-for (const a of ['workers', 'cic', 'centcom']) {
+// ---- built React apps (admin surfaces) ----
+for (const a of ['cic', 'centcom']) {
   const dist = path.join(appsDir, a, 'dist');
   app.use(`/${a}`, express.static(dist));
   app.get(`/${a}`, (_req, res) => res.redirect(`/${a}/`)); // no-slash -> slash
 }
 
-// ---- the real MiCasa customer app (original single-file UI, wired to /api) ----
-// It's a first-party static app that relies on inline scripts + a few known CDNs
-// (Leaflet, Google Fonts, OSM tiles), so relax CSP for THIS route only. The strict
-// P0 policy stays on the API and the React apps.
-const micasaDir = path.join(appsDir, 'micasa');
+// ---- the real MiCasa single-file apps (customer + worker), wired to /api ----
+// First-party static apps that rely on inline scripts + a few known CDNs (Leaflet,
+// Google Fonts, OSM tiles), so relax CSP for THESE routes only. The strict P0
+// policy stays on the API and the React admin apps.
 const micasaCsp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://unpkg.com",
@@ -69,9 +68,14 @@ const micasaCsp = [
   "connect-src 'self' https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org",
   "worker-src 'self' blob:",
 ].join('; ');
-app.use('/customer', (_req, res, next) => { res.setHeader('Content-Security-Policy', micasaCsp); next(); });
-app.use('/customer', express.static(micasaDir));
-app.get('/customer', (_req, res) => res.redirect('/customer/'));
+function serveMicasa(route: string, dir: string) {
+  const full = path.join(appsDir, dir);
+  app.use(route, (_req, res, next) => { res.setHeader('Content-Security-Policy', micasaCsp); next(); });
+  app.use(route, express.static(full));
+  app.get(route, (_req, res) => res.redirect(route + '/'));
+}
+serveMicasa('/customer', 'micasa');        // the polished customer app
+serveMicasa('/workers', 'micasa-worker');  // the polished worker app
 
 // ---- landing page: one menu to open every app, with test logins ----
 app.get('/', (_req, res) => res.type('html').send(landingHtml()));

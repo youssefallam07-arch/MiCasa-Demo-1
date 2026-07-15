@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#060B16">
+<title>MiCasa — صنايعي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060B16;--bg2:#0A1322;--card:#0E1930;--card2:#142240;
+  --line:rgba(148,178,255,.12);--line2:rgba(148,178,255,.22);
+  --accent:#4D9FFF;--accent2:#2563EB;--gold:#D9B36A;--green:#3DD68C;--red:#F16063;--amber:#F5B85C;
+  --text:#EAF0FA;--muted:#7E92B4;--dim:#465A80;--nav-h:70px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#02040A;color:var(--text);font-family:'Cairo',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.num{font-family:'Space Grotesk',monospace;direction:ltr;unicode-bidi:embed}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+input{font-family:inherit}
+::-webkit-scrollbar{width:0;height:0}
+#phone{position:relative;width:100%;height:100%;max-width:430px;max-height:932px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:500px){#phone{border-radius:42px;border:1px solid #14203a;box-shadow:0 40px 120px rgba(0,0,0,.85),0 0 0 10px #070d18}}
+
+/* header */
+.hdr{padding:calc(16px + env(safe-area-inset-top)) 18px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+.hdr-top{display:flex;align-items:center;gap:12px}
+.hdr .av{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex-shrink:0}
+.hdr .who{flex:1;min-width:0}
+.hdr .who b{font-size:15px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr .who span{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.hdr .who .star{color:var(--gold)}
+.online-tgl{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:30px;padding:6px 6px 6px 13px;flex-shrink:0}
+.online-tgl span{font-size:11.5px;font-weight:700;color:var(--muted)}
+.online-tgl.on span{color:var(--green)}
+.online-tgl .dot{width:34px;height:20px;border-radius:20px;background:#1a2740;position:relative;transition:.25s}
+.online-tgl .dot::after{content:'';position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:var(--dim);transition:.25s}
+.online-tgl.on .dot{background:var(--green)}
+.online-tgl.on .dot::after{right:16px;background:#04120a}
+.credit-chip{display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 13px}
+.credit-chip .cc-ic{width:30px;height:30px;border-radius:9px;background:rgba(77,159,255,.1);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.credit-chip .cc-tx{flex:1}
+.credit-chip .cc-tx b{font-size:13.5px}
+.credit-chip .cc-tx span{font-size:10.5px;color:var(--muted);display:block}
+.credit-chip .cc-top{background:rgba(77,159,255,.12);color:var(--accent);font-size:11px;font-weight:800;padding:7px 12px;border-radius:10px}
+
+.scroll{flex:1;overflow-y:auto;padding:16px 16px calc(var(--nav-h) + 24px)}
+.screen{display:none}.screen.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.sec{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.3px;margin:20px 4px 12px;display:flex;justify-content:space-between;align-items:center}
+.sec .cnt{color:var(--accent)}
+
+/* offline hero */
+.offline{display:flex;flex-direction:column;align-items:center;text-align:center;padding:50px 30px}
+.offline .ring{width:90px;height:90px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);margin-bottom:20px}
+.offline b{font-size:17px}
+.offline p{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6}
+.offline .go-on{margin-top:22px;background:var(--green);color:#04120a;border-radius:14px;padding:14px 30px;font-weight:800;font-size:15px}
+
+/* job card */
+.job{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:12px;animation:jin .4s}
+@keyframes jin{from{opacity:0;transform:translateY(14px)}to{opacity:1}}
+.job.prio{border-color:rgba(241,96,99,.3)}
+.job-top{display:flex;align-items:center;gap:12px}
+.job .j-ic{width:44px;height:44px;border-radius:13px;background:rgba(77,159,255,.09);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.job.prio .j-ic{background:rgba(241,96,99,.1);color:var(--red)}
+.job .j-mid{flex:1;min-width:0}
+.job .j-mid b{font-size:15px;font-weight:700;display:block}
+.job .j-mid .meta{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.job .j-off{text-align:left;flex-shrink:0}
+.job .j-off .lbl{font-size:9.5px;color:var(--muted);letter-spacing:.5px}
+.job .j-off b{font-size:18px;font-weight:800;color:var(--accent);font-family:'Space Grotesk'}
+.jtag{font-size:9px;font-weight:800;padding:3px 8px;border-radius:12px}
+.jtag.prio{background:rgba(241,96,99,.14);color:var(--red)}
+.jtag.zone{background:rgba(77,159,255,.1);color:var(--accent)}
+.jtag.bids{background:rgba(217,179,106,.1);color:var(--gold)}
+.job-act{display:flex;gap:9px;margin-top:13px}
+.job-act button{flex:1;padding:12px;border-radius:13px;font-weight:800;font-size:13.5px;transition:transform .12s}
+.job-act button:active{transform:scale(.96)}
+.j-bid{background:var(--accent2);color:#fff}
+.j-bid:disabled{opacity:.4}
+.j-mybid{background:rgba(61,214,140,.1);color:var(--green);border:1px solid rgba(61,214,140,.25)}
+.j-blocked{background:rgba(245,184,92,.08);border:1px dashed rgba(245,184,92,.3);color:var(--amber);font-size:11.5px;font-weight:700;padding:11px 13px;border-radius:12px;margin-top:11px;line-height:1.6;text-align:center}
+/* active job */
+.job.active{border-color:rgba(61,214,140,.35);background:linear-gradient(160deg,#0F2018,var(--card))}
+.job.active .j-ic{background:rgba(61,214,140,.12);color:var(--green)}
+.j-live{font-size:9px;font-weight:800;background:rgba(61,214,140,.14);color:var(--green);padding:3px 9px;border-radius:12px;animation:bl 1.5s infinite}
+@keyframes bl{50%{opacity:.4}}
+.empty{text-align:center;color:var(--muted);font-size:12.5px;padding:26px}
+
+/* wallet (reused) */
+.bal-card{border-radius:20px;padding:20px;background:linear-gradient(140deg,#12203C,#0A1428 60%,#14213f);border:1px solid var(--line2);position:relative;overflow:hidden}
+.bal-card .lbl{font-size:11px;color:var(--muted);font-weight:700}
+.bal-card .amt{font-size:34px;font-weight:700;margin-top:6px}
+.bal-card .amt small{font-size:14px;color:var(--muted)}
+.bal-sub{display:flex;gap:10px;margin-top:15px}
+.bal-sub .b{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:13px;padding:10px 12px}
+.bal-sub .b .t{font-size:10px;color:var(--muted)}
+.bal-sub .b .v{font-size:16px;font-weight:700;margin-top:3px}
+.bal-sub .b.held .v{color:var(--amber)}.bal-sub .b.debt .v{color:var(--red)}
+.legal{font-size:10px;color:var(--dim);line-height:1.6;margin:12px 4px 0;text-align:center}
+.topup-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:15px;padding:14px;border-radius:14px;background:linear-gradient(92deg,var(--accent2),#3B82F6);color:#fff;font-size:14.5px;font-weight:800}
+.led{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid rgba(148,178,255,.05)}
+.led .l-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.led .l-ic.topup{background:rgba(61,214,140,.1);color:var(--green)}.led .l-ic.hold{background:rgba(245,184,92,.1);color:var(--amber)}
+.led .l-ic.capture{background:rgba(241,96,99,.1);color:var(--red)}.led .l-ic.release{background:rgba(77,159,255,.1);color:var(--accent)}.led .l-ic.adjustment{background:rgba(126,146,180,.12);color:var(--muted)}
+.led .l-tx{flex:1;min-width:0}.led .l-tx b{font-size:13px;display:block}.led .l-tx span{font-size:10.5px;color:var(--muted)}
+.led .l-amt{font-weight:800;font-size:13.5px}.led .l-amt.pos{color:var(--green)}.led .l-amt.neg{color:var(--red)}.led .l-amt.hold-amt{color:var(--amber)}
+
+/* trust banner */
+.trust{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:14px}
+.trust b{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+.trust p{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.6}
+.trust.warn{border-color:rgba(245,184,92,.3)}.trust.bad{border-color:rgba(241,96,99,.3)}
+.trust.blue{border-color:rgba(77,159,255,.25)}
+
+/* earnings */
+.earn-hero{border-radius:20px;padding:22px;background:linear-gradient(140deg,#0F2018,#0A1428);border:1px solid rgba(61,214,140,.2);text-align:center}
+.earn-hero .lbl{font-size:11px;color:var(--muted);font-weight:700}
+.earn-hero .big{font-size:36px;font-weight:700;color:var(--green);margin-top:8px}
+.earn-row{display:flex;gap:10px;margin-top:14px}
+.earn-row .e{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.earn-row .e b{font-size:20px;font-weight:700;display:block}
+.earn-row .e span{font-size:10.5px;color:var(--muted)}
+
+/* bottom nav */
+#nav{position:absolute;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));height:var(--nav-h);z-index:30;background:rgba(9,15,28,.94);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:22px;display:flex;align-items:center;justify-content:space-around}
+.nav-b{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10px;color:var(--dim);font-weight:700;padding:8px 14px;position:relative}
+.nav-b svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-b.on{color:var(--accent)}
+.nav-b .nbdg{position:absolute;top:2px;right:8px;min-width:16px;height:16px;border-radius:9px;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* sheets */
+.veil{position:absolute;inset:0;background:rgba(2,5,12,.7);z-index:50;opacity:0;pointer-events:none;transition:.3s;backdrop-filter:blur(4px)}
+.veil.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:51;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line2);transform:translateY(105%);transition:.4s cubic-bezier(.22,1,.36,1);padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.sheet.show{transform:translateY(0)}
+.sheet .grab{width:42px;height:4px;border-radius:4px;background:#1E2C4D;margin:12px auto 6px}
+.sheet h3{font-size:17px;font-weight:700;padding:8px 22px 4px}
+.sheet .sd{font-size:12px;color:var(--muted);padding:0 22px 14px;line-height:1.6}
+.bid-in{padding:0 22px}
+.bid-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 8px 6px 16px;margin-bottom:12px}
+.bid-row .bl{font-size:13px;font-weight:700}
+.bid-row .bl span{display:block;font-size:10.5px;color:var(--muted);font-weight:400}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper button{width:38px;height:38px;border-radius:11px;background:var(--card2);border:1px solid var(--line2);font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.stepper .val{font-size:19px;font-weight:800;font-family:'Space Grotesk';min-width:60px;text-align:center}
+.stepper .val small{font-size:12px;color:var(--muted)}
+.gate-warn{margin:0 22px 12px;font-size:11.5px;line-height:1.6;padding:12px;border-radius:12px;display:none}
+.gate-warn.bad{display:block;background:rgba(241,96,99,.08);border:1px solid rgba(241,96,99,.25);color:#f0a0a0}
+.gate-warn.ok{display:block;background:rgba(61,214,140,.08);border:1px solid rgba(61,214,140,.25);color:#8fe0b8}
+.cta{margin:6px 22px 0;width:calc(100% - 44px);padding:15px;border-radius:14px;background:linear-gradient(92deg,var(--accent2),#3B82F6);color:#fff;font-weight:800;font-size:14.5px}
+.cta:active{transform:scale(.97)}.cta:disabled{opacity:.4}
+.cta.green{background:var(--green);color:#04120a}
+.amt-row{display:flex;gap:9px;padding:0 22px;flex-wrap:wrap}
+.amt-row button{flex:1;min-width:60px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px;font-weight:800;font-family:'Space Grotesk'}
+.amt-row button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.method-row{display:flex;gap:9px;padding:14px 22px}
+.method-row button{flex:1;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.method-row button.on{border-color:var(--accent);color:var(--text);background:rgba(77,159,255,.06)}
+.pending-note{margin:12px 22px 0;background:rgba(245,184,92,.06);border:1px solid rgba(245,184,92,.25);border-radius:13px;padding:13px;font-size:12px;color:var(--amber);line-height:1.6}
+.toast{position:absolute;bottom:calc(var(--nav-h) + 20px);left:16px;right:16px;z-index:95;background:rgba(10,18,34,.98);border:1px solid var(--line2);border-right:3px solid var(--accent);border-radius:13px;padding:13px 15px;font-size:13px;font-weight:600;box-shadow:0 16px 44px rgba(0,0,0,.6);animation:tin .35s}
+@keyframes tin{from{opacity:0;transform:translateY(16px)}to{opacity:1}}
+.devbtn{width:100%;margin-top:8px;border:1px dashed var(--line2);border-radius:12px;padding:11px;font-size:11.5px;color:var(--dim);font-weight:700}
+svg.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* id gate */
+#idgate{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;background:radial-gradient(120% 90% at 50% 0%,#0C1830,var(--bg) 60%)}
+#idgate svg.logo{width:60px;height:60px;margin-bottom:16px}
+#idgate h1{font-size:22px;font-weight:700}#idgate h1 b{color:var(--accent)}
+#idgate p{font-size:13px;color:var(--muted);margin:10px 0 22px;line-height:1.6}
+#idgate input{width:100%;max-width:280px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;color:var(--text);font-size:15px;text-align:center;outline:none}
+#idgate button{width:100%;max-width:280px;margin-top:14px;background:var(--accent2);border-radius:13px;padding:14px;font-weight:800;font-size:15px}
+</style>
+</head>
+<body>
+<svg style="display:none">
+<symbol id="i-wallet" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></symbol>
+<symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+<symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+<symbol id="i-power" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9 12 2"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+</svg>
+<div id="phone">
+  <!-- ID gate -->
+  <div id="idgate" style="display:none">
+    <svg class="logo" viewBox="0 0 200 200"><path d="M40 95 L100 42 L160 95" fill="none" stroke="#DDE9FF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M55 92 L55 158 L145 158 L145 92" fill="none" stroke="#4D9FFF" stroke-width="14" stroke-linecap="round"/><path d="M78 158 L78 112 L100 134 L122 112 L122 158" fill="none" stroke="#D9B36A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>Mi<b>Casa</b> صنايعي</h1>
+    <p>سجّل دخولك بحساب الصنايعي بتاعك</p>
+    <input id="wLoginUser" placeholder="اسم المستخدم" autocomplete="off">
+    <input id="wLoginPass" type="password" placeholder="كلمة السر" autocomplete="off" style="margin-top:10px">
+    <div id="wLoginErr" style="color:var(--red);font-size:13px;min-height:18px;margin:6px 0"></div>
+    <button onclick="workerLogin()">دخول</button>
+  </div>
+
+  <div class="hdr" id="hdr" style="display:none">
+    <div class="hdr-top">
+      <div class="av" id="hav">؟</div>
+      <div class="who"><b id="hname">…</b><span><span class="star" id="hrate">—</span> · <span id="hstatus">…</span></span></div>
+      <div class="online-tgl" id="onlineTgl" onclick="toggleOnline()"><span id="onlineTx">أوفلاين</span><div class="dot"></div></div>
+    </div>
+    <div class="credit-chip">
+      <span class="cc-ic"><svg class="ic"><use href="#i-wallet"/></svg></span>
+      <div class="cc-tx"><b>رصيد الخدمة: <span class="num" id="ccAvail">0</span> ج</b><span id="ccHeld"></span></div>
+      <button class="cc-top" onclick="openTopup()">اشحن</button>
+    </div>
+  </div>
+
+  <div class="scroll" id="scroll" style="display:none">
+    <!-- JOBS -->
+    <div class="screen on" id="s-jobs">
+      <div id="offlineHero" class="offline">
+        <div class="ring"><svg class="ic" style="width:34px;height:34px"><use href="#i-power"/></svg></div>
+        <b>إنت أوفلاين دلوقتي</b>
+        <p>افتح الأونلاين عشان تستقبل طلبات الزباين اللي في مناطقك وتقدم عروضك.</p>
+        <button class="go-on" onclick="toggleOnline()">افتح الأونلاين</button>
+      </div>
+      <div id="onlineBody" style="display:none">
+        <div id="activeJobs"></div>
+        <div class="sec">طلبات متاحة <span class="cnt" id="feedCnt"></span></div>
+        <div id="feed"></div>
+        <button class="devbtn" onclick="seedJob()">＋ محاكاة: أضف طلب تجريبي (للتجربة)</button>
+      </div>
+    </div>
+    <!-- WALLET -->
+    <div class="screen" id="s-wallet">
+      <div class="bal-card">
+        <div class="lbl">رصيد الخدمة المدفوع مقدماً</div>
+        <div class="amt"><span class="num" id="wAvail">0</span> <small>جنيه</small></div>
+        <div class="bal-sub">
+          <div class="b held"><div class="t">محجوز عمولة</div><div class="v num" id="wHeld">0</div></div>
+          <div class="b debt" id="wDebtBox" style="display:none"><div class="t">مستحق عليك</div><div class="v num" id="wDebt">0</div></div>
+        </div>
+        <button class="topup-btn" onclick="openTopup()"><svg class="ic"><use href="#i-plus"/></svg> اشحن رصيدك</button>
+      </div>
+      <div class="legal">رصيد مخصص لخصم عمولة المنصة فقط · غير قابل للسحب · يُرد فقط عند إغلاق الحساب</div>
+      <div class="sec">سجل المعاملات</div>
+      <div id="ledger"></div>
+    </div>
+    <!-- EARNINGS -->
+    <div class="screen" id="s-earn">
+      <div class="earn-hero">
+        <div class="lbl">إجمالي شغلاناتك المكتملة</div>
+        <div class="big"><span id="earnCount">0</span></div>
+      </div>
+      <div class="earn-row">
+        <div class="e"><b class="num" id="earnDone">0</b><span>شغلانة خلصت</span></div>
+        <div class="e"><b class="num" id="earnComm">0</b><span>عمولة اتدفعت (ج)</span></div>
+      </div>
+      <div class="sec">آخر الشغلانات</div>
+      <div id="earnList"></div>
+    </div>
+    <!-- PROFILE -->
+    <div class="screen" id="s-profile">
+      <div id="trustBanner"></div>
+      <div class="bal-card" style="background:linear-gradient(140deg,#141d33,#0A1428)">
+        <div class="lbl">حسابك</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
+          <div class="av" style="width:56px;height:56px;border-radius:18px;font-size:22px" id="pav">؟</div>
+          <div><b id="pname" style="font-size:17px"></b><div style="font-size:12px;color:var(--muted);margin-top:3px" id="pid"></div></div>
+        </div>
+        <div class="bal-sub">
+          <div class="b"><div class="t">التقييم</div><div class="v" id="pRate">—</div></div>
+          <div class="b"><div class="t">شغلانات</div><div class="v num" id="pJobs">0</div></div>
+          <div class="b"><div class="t">الحالة</div><div class="v" id="pMode" style="font-size:13px"></div></div>
+        </div>
+      </div>
+      <div class="sec">النظام</div>
+      <div class="trust"><b><svg class="ic" style="width:16px"><use href="#i-lock"/></svg> رصيد الخدمة</b><p>العمولة بتتحجز من رصيدك ساعة ما العميل يقبل عرضك، وتتخصم لما تخلص الشغلانة. من غير رصيد كافي، مش هتقدر تقدم عروض.</p></div>
+      <button class="devbtn" onclick="logoutWorker()" style="color:var(--red);border-color:rgba(241,96,99,.2)">تسجيل خروج</button>
+    </div>
+  </div>
+
+  <div id="nav" style="display:none">
+    <button class="nav-b on" data-s="jobs" onclick="tab('jobs')"><svg><use href="#i-briefcase"/></svg>شغل<span class="nbdg" id="feedBdg" style="display:none">0</span></button>
+    <button class="nav-b" data-s="wallet" onclick="tab('wallet')"><svg><use href="#i-wallet"/></svg>المحفظة</button>
+    <button class="nav-b" data-s="earn" onclick="tab('earn')"><svg><use href="#i-cash"/></svg>الأرباح</button>
+    <button class="nav-b" data-s="profile" onclick="tab('profile')"><svg><use href="#i-user"/></svg>حسابي</button>
+  </div>
+
+  <!-- bid sheet -->
+  <div class="veil" id="veil" onclick="closeSheet()"></div>
+  <div class="sheet" id="bidSheet">
+    <div class="grab"></div>
+    <h3 id="bidTitle">قدّم عرضك</h3>
+    <div class="sd" id="bidSub"></div>
+    <div class="bid-in">
+      <div class="bid-row"><div class="bl">سعرك<span>العميل عارض <span class="num" id="bidOffer">0</span> ج</span></div>
+        <div class="stepper"><button onclick="bidStep(-10)"><svg class="ic sm" style="width:16px;height:16px"><use href="#i-minus"/></svg></button><div class="val"><span class="num" id="bidPrice">0</span><small> ج</small></div><button onclick="bidStep(10)"><svg class="ic sm" style="width:16px;height:16px"><use href="#i-plus"/></svg></button></div>
+      </div>
+      <div class="bid-row"><div class="bl">وقت الوصول<span>تقديرك بالدقايق</span></div>
+        <div class="stepper"><button onclick="etaStep(-5)"><svg class="ic sm" style="width:16px;height:16px"><use href="#i-minus"/></svg></button><div class="val"><span class="num" id="bidEta">30</span><small> د</small></div><button onclick="etaStep(5)"><svg class="ic sm" style="width:16px;height:16px"><use href="#i-plus"/></svg></button></div>
+      </div>
+    </div>
+    <div class="gate-warn" id="bidWarn"></div>
+    <button class="cta" id="bidSubmit" onclick="submitBid()">ابعت العرض</button>
+  </div>
+
+  <!-- topup sheet -->
+  <div class="sheet" id="topupSheet">
+    <div class="grab"></div>
+    <h3>اشحن رصيد الخدمة</h3>
+    <div class="sd">اختر المبلغ ووسيلة الدفع. بعد التحويل، الأدمن بيأكد الاستلام ويتضاف الرصيد. الحد الأدنى <span class="num" id="minTopup">100</span> جنيه.</div>
+    <div class="amt-row" id="amtRow"></div>
+    <div class="method-row">
+      <button class="on" data-m="vodafone_cash" onclick="pickMethod(this)">فودافون كاش</button>
+      <button data-m="instapay" onclick="pickMethod(this)">إنستاباي</button>
+    </div>
+    <button class="cta" onclick="submitTopup()">طلب شحن</button>
+    <div class="pending-note" id="pendNote" style="display:none"></div>
+  </div>
+</div>
+<script>
+'use strict';
+let VP_TOKEN=localStorage.getItem('mc_worker_token')||null;
+let WID=localStorage.getItem('mc_worker_id')||'';
+let WNAME=localStorage.getItem('mc_worker_name')||'صنايعي';
+let W=null,CFG=null,online=localStorage.getItem('mc_online')==='1',pollT=null,curTab='jobs';
+let bidJob=null,bidPrice=0,bidEta=30,topupAmt=10000,topupMethod='vodafone_cash';
+const $=id=>document.getElementById(id);
+const P2E=p=>Math.round((p||0)/100);
+const fmt=n=>(n||0).toLocaleString('en-US');
+const SVC={plumbing:['سباكة','i-wallet'],electrical:['كهرباء','i-bolt'],ac:['تكييف','i-wallet'],carpentry:['نجارة','i-wallet'],painting:['دهانات','i-wallet'],appliance:['أجهزة','i-wallet'],handyman:['صنايعي','i-briefcase']};
+function svcName(id){return (SVC[id]&&SVC[id][0])||id}
+
+/* ===== REAL BACKEND (venture-platform /api/worker/*), JWT-authed ===== */
+const CFG_DEFAULTS={rateStdBp:1200,ratePriBp:1700,postpaidJobs:3,minTopupPst:10000,probationJobs:5,activeZones:['المعادي','مدينة نصر','الزمالك','مصر الجديدة']};
+const egpToPst=e=>Math.round(e*100), pstToEgp=p=>Math.round((p||0)/100);
+async function vpFetch(path,method,body){
+  const headers={};
+  if(VP_TOKEN)headers['Authorization']='Bearer '+VP_TOKEN;
+  if(body)headers['Content-Type']='application/json';
+  const r=await fetch('/api'+path,{method:method||'GET',headers,body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw Object.assign(new Error(data.error||'error'),{status:r.status,data});
+  return data;
+}
+// translate the original credit-API shapes onto /api/worker/*
+async function api(path,method,body){
+  const base=(path||'').split('?')[0];
+  try{
+    if(base==='config')return CFG_DEFAULTS;
+    if(base==='worker'){
+      const me=(await vpFetch('/worker/me')).profile||{};
+      const wal=await vpFetch('/worker/wallet');
+      return {name:WNAME,availablePst:wal.availablePst||0,heldPst:wal.heldPst||0,debtPst:wal.debtPst||0,
+        ratingCount:me.ratingCount||0,ratingAvgX10:me.ratingCount?Math.round((me.ratingSum/me.ratingCount)*10):0,
+        vetting:{status:me.verificationStatus},mode:me.walletMode,suspended:!!me.suspended,
+        completedJobs:me.jobsCompleted||0,reviewedJobs:me.ratingCount||0,
+        ledger:(wal.txns||[]).slice().reverse().map(x=>({type:x.type,amountPst:x.amountPst,job:x.jobId,bucket:x.bucket,ts:x.createdAt}))};
+    }
+    if(base==='feed'){
+      const r=await vpFetch('/worker/feed');
+      return {jobs:(r.jobs||[]).map(j=>({job:j.id,svc:j.trade,zone:j.zone,priority:j.urgency==='priority',
+        offerEgp:pstToEgp(j.budgetOfferPst),bidCount:j.bidCount||0,
+        ageMins:Math.max(0,Math.round((Date.now()-new Date(j.createdAt).getTime())/60000)),
+        canBid:j.canBid,blockReason:j.blockReason==='not_verified'?'not_vetted':j.blockReason,
+        myBid:j.myBid?{priceEgp:pstToEgp(j.myBid.pricePst),etaMin:j.myBid.etaMin}:null}))};
+    }
+    if(base==='my-jobs'){
+      const jobs=(await vpFetch('/worker/jobs')).jobs||[];
+      const active=jobs.filter(j=>j.status==='accepted'||j.status==='worker_done').map(j=>({
+        job:j.id,svc:j.trade,zone:j.zone,acceptedEgp:pstToEgp(j.budgetOfferPst),bidEgp:pstToEgp(j.budgetOfferPst),status:j.status}));
+      let completedCount=0,earned=0;
+      try{const wal=await vpFetch('/worker/wallet');const caps=(wal.txns||[]).filter(x=>x.type==='capture');completedCount=caps.length;earned=caps.reduce((s,x)=>s+x.amountPst,0);}catch(e){}
+      return {active,completedCount,earnedPstCommission:earned};
+    }
+    if(base==='bid'){
+      try{await vpFetch('/worker/bids','POST',{jobId:body.job,pricePst:egpToPst(body.priceEgp),etaMin:body.etaMin});return {ok:true};}
+      catch(e){const c=(e.data&&e.data.error)||'';return {error:/insufficient|coverage|debt/.test(c)?'insufficient':/not_open|closed/.test(c)?'job_closed':'error'};}
+    }
+    if(base==='capture'){try{await vpFetch('/worker/jobs/'+body.job+'/complete','POST');return {ok:true};}catch(e){return {error:(e.data&&e.data.error)||'error'};}}
+    if(base==='topup'){try{const r=await vpFetch('/worker/wallet/topup','POST',{amountPst:body.amountPst,method:body.method});return {ok:true,ref:r.ref};}catch(e){return {error:(e.data&&e.data.error)||'error'};}}
+    if(base==='jobs-post')return {ok:false};
+    return {};
+  }catch(e){if(e&&e.status===401){logoutWorker();}return null;}
+}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;$('phone').appendChild(t);setTimeout(()=>t.remove(),3200)}
+
+/* ==== real login (worker or owner) ==== */
+async function workerLogin(){
+  const u=($('wLoginUser').value||'').trim().toLowerCase(), p=$('wLoginPass').value||'';
+  const err=$('wLoginErr'); err.textContent='';
+  if(!u||!p){err.textContent='اكتب اسم المستخدم وكلمة السر';return}
+  try{
+    const r=await vpFetch('/auth/login','POST',{username:u,password:p});
+    if(r.user.role==='customer'){err.textContent='ده حساب عميل مش صنايعي';return}
+    VP_TOKEN=r.token;WID=r.user.id;WNAME=r.user.name;
+    localStorage.setItem('mc_worker_token',r.token);
+    localStorage.setItem('mc_worker_id',WID);localStorage.setItem('mc_worker_name',WNAME);
+    boot();
+  }catch(e){err.textContent='بيانات الدخول غلط';}
+}
+function logoutWorker(){VP_TOKEN=null;localStorage.removeItem('mc_worker_token');localStorage.removeItem('mc_worker_id');localStorage.removeItem('mc_online');location.reload()}
+
+/* ==== boot ==== */
+async function boot(){
+  if(!VP_TOKEN){$('idgate').style.display='flex';return}
+  $('idgate').style.display='none';
+  $('hdr').style.display='block';$('scroll').style.display='block';$('nav').style.display='flex';
+  CFG=await api('config');
+  await loadWorker();
+  setOnlineUI();
+  if(online)startPolling();
+  refreshLoop();
+}
+async function loadWorker(){
+  W=await api('worker?id='+encodeURIComponent(WID)+'&name='+encodeURIComponent(WNAME));
+  if(W&&W.name)WNAME=W.name;localStorage.setItem('mc_worker_name',WNAME);
+  renderHeader();renderWallet();renderProfile();renderEarn();
+}
+function renderHeader(){
+  $('hav').textContent=(WNAME||'؟').trim()[0]||'؟';
+  $('pav').textContent=(WNAME||'؟').trim()[0]||'؟';
+  $('hname').textContent=WNAME;
+  $('hrate').textContent=W.ratingCount?('★ '+(W.ratingAvgX10/10).toFixed(1)):'★ جديد';
+  const vs=W.vetting&&W.vetting.status;
+  $('hstatus').textContent=W.suspended?'موقوف':vs&&vs!=='approved'?'تحت المراجعة':W.mode==='prepaid'?'رصيد مسبق':'فترة سماح';
+  $('ccAvail').textContent=fmt(P2E(W.availablePst));
+  $('ccHeld').textContent=W.heldPst>0?('محجوز '+fmt(P2E(W.heldPst))+' ج'):'جاهز للشغل';
+}
+
+/* ==== online toggle ==== */
+function setOnlineUI(){
+  $('onlineTgl').classList.toggle('on',online);
+  $('onlineTx').textContent=online?'أونلاين':'أوفلاين';
+  $('offlineHero').style.display=online?'none':'flex';
+  $('onlineBody').style.display=online?'block':'none';
+}
+function toggleOnline(){
+  online=!online;localStorage.setItem('mc_online',online?'1':'0');
+  setOnlineUI();
+  if(online){toast('إنت أونلاين — بتستقبل الطلبات دلوقتي');startPolling();pollFeed()}
+  else{toast('قفلت الأونلاين');stopPolling();$('feedBdg').style.display='none'}
+}
+function startPolling(){stopPolling();pollT=setInterval(()=>{if(curTab==='jobs')pollFeed();pollActive()},4000)}
+function stopPolling(){clearInterval(pollT)}
+function refreshLoop(){setInterval(loadWorker,8000)}
+
+/* ==== job feed ==== */
+async function pollFeed(){
+  if(!online)return;
+  const r=await api('feed?id='+encodeURIComponent(WID)+'&name='+encodeURIComponent(WNAME));
+  if(!r||!r.jobs)return;
+  const jobs=r.jobs.filter(j=>!j.myBid||true);
+  $('feedCnt').textContent=r.jobs.length?('('+r.jobs.length+')'):'';
+  const openBiddable=r.jobs.filter(j=>!j.myBid).length;
+  const bdg=$('feedBdg');if(openBiddable>0&&curTab!=='jobs'){bdg.style.display='flex';bdg.textContent=openBiddable}else bdg.style.display='none';
+  $('feed').innerHTML=r.jobs.length?r.jobs.map(jobCard).join(''):'<div class="empty">مفيش طلبات في مناطقك دلوقتي — استنى شوية أو جرّب المحاكاة تحت.</div>';
+}
+function jobCard(j){
+  const [nm,icn]=SVC[j.svc]||[j.svc,'i-briefcase'];
+  const mine=j.myBid;
+  let action;
+  if(mine)action=`<button class="j-mybid" disabled>عرضك: ${fmt(mine.priceEgp)} ج · وصول ${mine.etaMin} د ✓</button>`;
+  else if(!j.canBid){
+    const msg=j.blockReason==='probation_no_priority'?'الطلبات الطارئة للمعتمدين فقط':j.blockReason==='suspended'?'حسابك موقوف':j.blockReason==='not_vetted'?'حسابك تحت المراجعة':'رصيدك مش مكفي للعمولة — اشحن الأول';
+    action=`<div class="j-blocked">${msg}</div>`;
+  }
+  else action=`<button class="j-bid" onclick='openBid(${JSON.stringify(j).replace(/'/g,"&#39;")})'>قدّم عرضك</button>`;
+  return `<div class="job ${j.priority?'prio':''}">
+    <div class="job-top">
+      <div class="j-ic"><svg class="ic"><use href="#${icn}"/></svg></div>
+      <div class="j-mid"><b>${nm}</b>
+        <div class="meta"><span class="jtag zone"><svg class="ic" style="width:11px;height:11px;display:inline"><use href="#i-pin"/></svg> ${j.zone}</span>
+          ${j.priority?'<span class="jtag prio">طوارئ</span>':''}
+          ${j.bidCount?`<span class="jtag bids">${j.bidCount} عرض</span>`:''}
+          <span style="color:var(--dim)">${j.ageMins}د</span></div>
+      </div>
+      <div class="j-off"><div class="lbl">عرض العميل</div><b class="num">${fmt(j.offerEgp)}</b></div>
+    </div>
+    ${action}</div>`;
+}
+async function pollActive(){
+  const r=await api('my-jobs?id='+encodeURIComponent(WID));
+  if(!r)return;
+  const act=(r.active||[]);
+  $('activeJobs').innerHTML=act.length?('<div class="sec">شغلك الحالي <span class="cnt">('+act.length+')</span></div>'+act.map(activeCard).join('')):'';
+}
+function activeCard(j){
+  const [nm,icn]=SVC[j.svc]||[j.svc,'i-briefcase'];
+  return `<div class="job active">
+    <div class="job-top">
+      <div class="j-ic"><svg class="ic"><use href="#${icn}"/></svg></div>
+      <div class="j-mid"><b>${nm} <span class="j-live">شغال</span></b>
+        <div class="meta"><span class="jtag zone">${j.zone}</span><span>العميل قبل عرضك</span></div></div>
+      <div class="j-off"><div class="lbl">السعر</div><b class="num" style="color:var(--green)">${fmt(j.acceptedEgp||j.bidEgp)}</b></div>
+    </div>
+    <div class="job-act">
+      <button class="j-mybid" onclick="toast('اتصل بالعميل')"><svg class="ic" style="width:15px;height:15px;display:inline"><use href="#i-phone"/></svg> اتصل</button>
+      <button class="cta green" style="margin:0;width:auto;flex:1;padding:12px" onclick="completeJob('${j.job}')">خلصت الشغلانة</button>
+    </div></div>`;
+}
+async function completeJob(job){
+  const r=await api('capture','POST',{id:WID,job});
+  if(r&&r.ok){toast('تمام! اتخصمت العمولة'+(r.switchedToPrepaid?' · بقيت على نظام الرصيد المسبق':''));await loadWorker();pollActive();pollFeed()}
+  else toast('حصل خطأ');
+}
+
+/* ==== bidding ==== */
+function openBid(j){
+  bidJob=j;bidPrice=j.offerEgp;bidEta=30;
+  $('bidTitle').textContent=svcName(j.svc)+' · '+j.zone;
+  $('bidSub').textContent='قدّم سعرك ووقت وصولك. العميل بيشوف عروض كذا صنايعي ويختار.';
+  $('bidOffer').textContent=fmt(j.offerEgp);
+  renderBidSheet();showSheet('bidSheet');
+}
+function bidStep(d){bidPrice=Math.max(10,bidPrice+d);renderBidSheet()}
+function etaStep(d){bidEta=Math.max(5,bidEta+d);$('bidEta').textContent=bidEta}
+function renderBidSheet(){
+  $('bidPrice').textContent=fmt(bidPrice);$('bidEta').textContent=bidEta;
+  // live coverage check
+  const commEgp=P2E(Math.floor(bidPrice*100*(bidJob.priority?CFG.ratePriBp:CFG.rateStdBp)/10000));
+  const w=$('bidWarn');
+  if(W.availablePst>=commEgp*100||(W.mode==='postpaid'&&W.completedJobs<CFG.postpaidJobs)){
+    w.className='gate-warn ok';w.innerHTML=`لو العميل قبل عرضك، هيتحجز <b class="num">${fmt(commEgp)}</b> جنيه عمولة من رصيدك — رصيدك يغطيها ✓`;
+    $('bidSubmit').disabled=false;
+  }else{
+    w.className='gate-warn bad';w.innerHTML=`لو العميل قبل عرضك، هيتحجز <b class="num">${fmt(commEgp)}</b> جنيه عمولة — رصيدك مش مكفي، اشحن الأول.`;
+    $('bidSubmit').disabled=true;
+  }
+}
+async function submitBid(){
+  const r=await api('bid','POST',{id:WID,name:WNAME,job:bidJob.job,priceEgp:bidPrice,etaMin:bidEta});
+  if(r&&r.ok){toast('اتبعت عرضك — استنى العميل يختار');closeSheet();pollFeed()}
+  else if(r&&r.error==='job_closed'){toast('الطلب اتقفل خلاص');closeSheet();pollFeed()}
+  else if(r&&(r.error==='insufficient'||r.error==='debt_unsettled')){toast('رصيدك مش مكفي — اشحن الأول')}
+  else toast('تعذر إرسال العرض');
+}
+
+/* ==== wallet ==== */
+function renderWallet(){
+  $('wAvail').textContent=fmt(P2E(W.availablePst));
+  $('wHeld').textContent=fmt(P2E(W.heldPst));
+  if(W.debtPst>0){$('wDebtBox').style.display='block';$('wDebt').textContent=fmt(P2E(W.debtPst))}else $('wDebtBox').style.display='none';
+  const LT={topup:'شحن رصيد',hold:'حجز عمولة',capture:'خصم عمولة',release:'استرجاع',adjustment:'تسوية',refund:'رد رصيد'};
+  const SIGN={topup:'+',release:'+',hold:'',capture:'−',adjustment:'−',refund:'+'};
+  const CLS={topup:'pos',release:'pos',hold:'hold-amt',capture:'neg',adjustment:'pos',refund:'pos'};
+  const ICON={topup:'down',release:'down',hold:'lock',capture:'up',adjustment:'check',refund:'down'};
+  const led=[...(W.ledger||[])].reverse();
+  $('ledger').innerHTML=led.length?led.map(e=>{
+    const cls=e.type==='adjustment'?(e.amountPst<0?'pos':'neg'):CLS[e.type];
+    const sign=e.type==='adjustment'?(e.amountPst<0?'−':'+'):SIGN[e.type];
+    const note=e.type==='hold'?(e.bucket==='debt'?'مستحق':'محجوز'):'';
+    return `<div class="led"><div class="l-ic ${e.type}"><svg class="ic"><use href="#i-${ICON[e.type]||'clock'}"/></svg></div>
+      <div class="l-tx"><b>${LT[e.type]||e.type}</b><span>${e.job?'شغلانة #'+e.job+' · ':''}${note?note+' · ':''}${new Date(e.ts).toLocaleDateString('ar-EG')}</span></div>
+      <div class="l-amt ${cls} num">${sign}${fmt(P2E(Math.abs(e.amountPst)))} ج</div></div>`;
+  }).join(''):'<div class="empty">مفيش معاملات لسه</div>';
+}
+/* ==== earnings ==== */
+async function renderEarn(){
+  const r=await api('my-jobs?id='+encodeURIComponent(WID));
+  const done=r?r.completedCount:0;
+  $('earnCount').textContent=done;$('earnDone').textContent=done;
+  $('earnComm').textContent=fmt(P2E(r?r.earnedPstCommission:0));
+  const caps=[...(W.ledger||[])].filter(e=>e.type==='capture').reverse();
+  $('earnList').innerHTML=caps.length?caps.map(e=>`<div class="led"><div class="l-ic capture"><svg class="ic"><use href="#i-check"/></svg></div>
+    <div class="l-tx"><b>شغلانة خلصت #${e.job||''}</b><span>${new Date(e.ts).toLocaleDateString('ar-EG')}</span></div>
+    <div class="l-amt num" style="color:var(--muted)">عمولة ${fmt(P2E(e.amountPst))} ج</div></div>`).join(''):'<div class="empty">لسه مخلصتش شغلانات</div>';
+}
+/* ==== profile ==== */
+function renderProfile(){
+  $('pname').textContent=WNAME;$('pid').textContent=WID;
+  $('pRate').textContent=W.ratingCount?('★ '+(W.ratingAvgX10/10).toFixed(1)):'جديد';
+  $('pJobs').textContent=W.completedJobs||0;
+  $('pMode').textContent=W.mode==='prepaid'?'رصيد مسبق':'فترة سماح';
+  const tb=$('trustBanner');const vs=W.vetting&&W.vetting.status;
+  const proven=(W.reviewedJobs||0)>=(CFG.probationJobs||5);
+  if(W.suspended){tb.innerHTML='<div class="trust bad"><b>⛔ الحساب موقوف</b><p>وصلت للحد الأقصى من الإلغاءات. كلّم الدعم لمراجعة الحساب. مش هتقدر تقدم عروض.</p></div>';}
+  else if(vs&&vs!=='approved'){const M={applied:'طلبك تحت المراجعة',interviewed:'تم الإنترفيو — فاضل شغلانة تجريبية',trial:'شغلانة تجريبية',rejected:'الطلب مرفوض'};tb.innerHTML=`<div class="trust warn"><b>⏳ التوثيق: ${M[vs]||vs}</b><p>لازم تعدّي مراحل التوثيق (إنترفيو + ضامن + تجريبي) قبل ما تقدر تشتغل.</p></div>`;}
+  else if(!proven){const left=(CFG.probationJobs||5)-(W.reviewedJobs||0);tb.innerHTML=`<div class="trust blue"><b>🎯 تحت الاختبار</b><p>باقيلك ${left} شغلانة متقيّمة عشان تفتح شغلانات الطوارئ. دلوقتي بتشوف العادية بس.</p></div>`;}
+  else tb.innerHTML='<div class="trust"><b>✅ صنايعي معتمد</b><p>حسابك موثّق ومفتوح على كل الشغلانات بما فيها الطوارئ.</p></div>';
+}
+
+/* ==== tabs / sheets ==== */
+function tab(t){curTab=t;document.querySelectorAll('.nav-b').forEach(b=>b.classList.toggle('on',b.dataset.s===t));document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$('s-'+t).classList.add('on');
+  if(t==='jobs'&&online)pollFeed();if(t==='earn')renderEarn();if(t==='wallet')renderWallet();if(t==='profile')renderProfile();}
+function showSheet(id){$('veil').classList.add('show');$(id).classList.add('show')}
+function closeSheet(){$('veil').classList.remove('show');document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'))}
+
+/* ==== topup ==== */
+function openTopup(){
+  const min=P2E(CFG.minTopupPst);$('minTopup').textContent=min;
+  const opts=[min,min*2,min*5,min*10];topupAmt=opts[0]*100;
+  $('amtRow').innerHTML=opts.map((v,i)=>`<button class="${i===0?'on':''}" data-v="${v*100}" onclick="pickAmt(this)"><span class="num">${fmt(v)}</span></button>`).join('');
+  $('pendNote').style.display='none';showSheet('topupSheet');
+}
+function pickAmt(b){document.querySelectorAll('#amtRow button').forEach(x=>x.classList.remove('on'));b.classList.add('on');topupAmt=+b.dataset.v}
+function pickMethod(b){document.querySelectorAll('.method-row button').forEach(x=>x.classList.remove('on'));b.classList.add('on');topupMethod=b.dataset.m}
+async function submitTopup(){
+  const r=await api('topup','POST',{id:WID,name:WNAME,amountPst:topupAmt,method:topupMethod});
+  if(r.error==='below_minimum'){toast('المبلغ أقل من الحد الأدنى');return}
+  const label=topupMethod==='vodafone_cash'?'فودافون كاش':'إنستاباي';
+  $('pendNote').style.display='block';
+  $('pendNote').innerHTML=`تمام! حوّل <b class="num">${fmt(P2E(topupAmt))}</b> جنيه على ${label} وهيتم تأكيد الاستلام من الأدمن. رقم الطلب: <b class="num">${r.ref}</b>`;
+  toast('تم إرسال طلب الشحن — بانتظار تأكيد الأدمن');loadWorker();
+}
+
+/* ==== demo helper: seed a job so the feed isn't empty ==== */
+async function seedJob(){
+  const zone=(CFG.activeZones&&CFG.activeZones[0])||'Cairo';
+  const svcs=['plumbing','electrical','ac','carpentry','painting'];
+  const svc=svcs[Math.floor(Math.random()*svcs.length)];
+  const price=[150,200,250,300,350,400][Math.floor(Math.random()*6)];
+  const job='DEMO'+Date.now().toString(36).slice(-5);
+  await api('jobs-post','POST',{job,svc,zone,bidEgp:price,priority:Math.random()<0.25});
+  toast('اتضاف طلب تجريبي في '+zone);pollFeed();
+}
+boot();
+</script>
+</body>
+</html>
