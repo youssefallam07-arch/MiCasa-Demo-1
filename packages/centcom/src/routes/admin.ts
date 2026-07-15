@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { z } from 'zod';
 import { requireRole, signImpersonation } from '../auth';
 import { h, body } from '../helpers';
-import { admin, prisma } from '../core';
+import { admin, prisma, forceComplete, forceCancel } from '../core';
 import { buildRegistryWorkbook } from '../registry-xlsx';
 
 export const adminRouter = Router();
@@ -63,6 +63,14 @@ adminRouter.post('/topups/confirm', body(z.object({ ref: z.string() })), h(async
 }));
 adminRouter.post('/releases/approve', body(z.object({ jobId: z.string() })), h(async (req, res) => {
   res.json(await admin.releaseHold(req.body.jobId, 'admin'));
+}));
+
+// Admin overrides for stuck jobs — a reason is required and lands in the money ledger.
+adminRouter.post('/jobs/:id/force-complete', body(z.object({ note: z.string().min(3) })), h(async (req, res) => {
+  res.json(await forceComplete(req.params.id, req.body.note));
+}));
+adminRouter.post('/jobs/:id/force-cancel', body(z.object({ note: z.string().min(3) })), h(async (req, res) => {
+  res.json(await forceCancel(req.params.id, req.body.note));
 }));
 adminRouter.post('/config', body(z.object({ key: z.string(), value: z.string() })), h(async (req, res) => {
   await admin.setConfig(req.body.key, req.body.value);

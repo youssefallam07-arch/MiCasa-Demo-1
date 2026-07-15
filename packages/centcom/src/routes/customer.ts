@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireRole } from '../auth';
 import { h, body } from '../helpers';
-import { postJob, myJobsCustomer, listBidsForJob, acceptBid, confirmComplete, releaseHold, rate, prisma } from '../core';
+import { postJob, myJobsCustomer, listBidsForJob, acceptBid, confirmComplete, releaseHold, cancelOpenJob, cancelByCustomer, rate, prisma } from '../core';
 
 export const customerRouter = Router();
 customerRouter.use(requireRole('customer'));
@@ -32,10 +32,19 @@ customerRouter.post('/jobs/:id/confirm-complete', h(async (req, res) => {
   res.json(await confirmComplete(req.user!.sub, req.params.id));
 }));
 
-// customer confirms the worker's cancellation -> releases the commission hold
+// customer cancels their own job: open -> cancelled (no money); accepted/worker_done -> cancel_pending
+customerRouter.post('/jobs/:id/cancel', body(z.object({ contacted: z.boolean().default(false) })), h(async (req, res) => {
+  const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+  if (!job || job.customerId !== req.user!.sub) return res.status(403).json({ error: 'not_your_job' });
+  if (job.status === 'open') return res.json(await cancelOpenJob(req.user!.sub, req.params.id));
+  res.json(await cancelByCustomer(req.user!.sub, req.params.id, req.body.contacted));
+}));
+
+// customer confirms the WORKER's cancellation -> releases the commission hold
 customerRouter.post('/jobs/:id/confirm-cancel', h(async (req, res) => {
   const job = await prisma.job.findUnique({ where: { id: req.params.id } });
   if (!job || job.customerId !== req.user!.sub) return res.status(403).json({ error: 'not_your_job' });
+  if (job.cancelledBy !== 'worker') return res.status(409).json({ error: 'not_worker_cancel' });
   res.json(await releaseHold(req.params.id, 'customer'));
 }));
 

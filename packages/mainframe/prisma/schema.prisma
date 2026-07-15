@@ -69,10 +69,12 @@ model Job {
   contactedBeforeCancel Boolean @default(false)
   cancelledBy      String?
   createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt @default(now())
   completedAt      DateTime?
 
-  bids    Bid[]
-  ratings Rating[]
+  bids          Bid[]
+  ratings       Rating[]
+  cancellations Cancellation[]
 }
 
 /// status: active | accepted | rejected | withdrawn
@@ -100,6 +102,21 @@ model Rating {
   ratee     User     @relation("RateeRatings", fields: [rateeId], references: [id])
   stars     Int
   comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, raterId]) // one rating per person per job
+}
+
+/// A cancellation event — the source of truth for the worker strike window.
+/// by: customer | worker | admin
+model Cancellation {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id])
+  by        String
+  byUserId  String?  // who actually triggered it (worker/customer/admin user id)
+  contacted Boolean  @default(false)
+  note      String   @default("")
   createdAt DateTime @default(now())
 }
 

@@ -66,7 +66,7 @@ function Shell({ user, onOut }) {
       <main className="main">
         {page === 'dashboard' && <Dashboard d={d} jobs={data.jobs || []} />}
         {page === 'verification' && <Verification workers={data.workers || []} reload={load} />}
-        {page === 'jobs' && <Jobs jobs={data.jobs || []} />}
+        {page === 'jobs' && <Jobs jobs={data.jobs || []} reload={load} />}
         {page === 'wallets' && <Wallets wallets={data.wallets} />}
         {page === 'topups' && <Topups topups={data.topups || []} reload={load} />}
         {page === 'releases' && <Releases releases={data.releases || []} reload={load} />}
@@ -98,11 +98,20 @@ function Dashboard({ d, jobs }) {
   );
 }
 
-function JobsTable({ jobs }) {
+function JobsTable({ jobs, reload }) {
   if (!jobs.length) return <div className="empty">No jobs.</div>;
+  const canOverride = (s) => ['accepted', 'worker_done', 'cancel_pending'].includes(s);
+  async function override(j, kind) {
+    const note = window.prompt(kind === 'complete'
+      ? 'Reason to force-COMPLETE (captures the commission):'
+      : 'Reason to force-CANCEL (releases the commission):');
+    if (!note || note.trim().length < 3) return;
+    try { await api(`/admin/jobs/${j.id}/force-${kind}`, 'POST', { note: note.trim() }); reload && reload(); }
+    catch (e) { alert('Error: ' + (e.data?.error || 'failed')); }
+  }
   return (
     <div className="tblwrap"><table>
-      <thead><tr><th>Trade</th><th>Zone</th><th>Urgency</th><th>Budget</th><th>Commission</th><th>Bids</th><th>Customer</th><th>Status</th></tr></thead>
+      <thead><tr><th>Trade</th><th>Zone</th><th>Urgency</th><th>Budget</th><th>Commission</th><th>Bids</th><th>Customer</th><th>Status</th>{reload && <th>Override</th>}</tr></thead>
       <tbody>{jobs.map((j) => (
         <tr key={j.id}>
           <td><b>{j.trade}</b></td><td>{j.zone}</td>
@@ -111,6 +120,12 @@ function JobsTable({ jobs }) {
           <td className="money">{j.commissionPst ? 'EGP ' + egp(j.commissionPst) : '—'}</td>
           <td>{j.bidCount}</td><td>{j.customer}</td>
           <td><span className={'pill ' + statusPill(j.status)}>{j.status}</span></td>
+          {reload && <td>{canOverride(j.status)
+            ? <div style={{ display: 'flex', gap: 6 }}>
+                <button className="act green" onClick={() => override(j, 'complete')} title="Capture commission, mark completed">Force complete</button>
+                <button className="act red" onClick={() => override(j, 'cancel')} title="Release commission, mark cancelled">Force cancel</button>
+              </div>
+            : <span style={{ color: 'var(--muted)', fontSize: 11 }}>—</span>}</td>}
         </tr>
       ))}</tbody>
     </table></div>
@@ -147,8 +162,8 @@ function Verification({ workers, reload }) {
   );
 }
 
-function Jobs({ jobs }) {
-  return <><h2 className="title">Jobs</h2><div className="sub">All jobs across the platform.</div><div className="card"><JobsTable jobs={jobs} /></div></>;
+function Jobs({ jobs, reload }) {
+  return <><h2 className="title">Jobs</h2><div className="sub">All jobs across the platform. Use overrides to force a stuck job to a terminal state (a reason is logged to the ledger).</div><div className="card"><JobsTable jobs={jobs} reload={reload} /></div></>;
 }
 
 function Wallets({ wallets }) {

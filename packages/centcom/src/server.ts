@@ -12,6 +12,7 @@ import { customerRouter } from './routes/customer';
 import { workerRouter } from './routes/worker';
 import { adminRouter } from './routes/admin';
 import { landingHtml } from './landing';
+import { autoCaptureStale, recomputeAllRatings } from './core';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const appsDir = path.resolve(here, '../../../apps');
@@ -61,4 +62,11 @@ app.use(errorHandler);
 
 app.listen(ENV.PORT, () => {
   console.log(`[centcom] API + apps on http://localhost:${ENV.PORT}`);
+  // Backfill rating aggregates once, then auto-capture stale worker_done jobs on boot + hourly.
+  recomputeAllRatings().catch((e) => console.error('[centcom] rating backfill failed:', e?.message || e));
+  const sweep = () => autoCaptureStale()
+    .then((r) => { if (r.captured) console.log(`[centcom] auto-captured ${r.captured} stale job(s)`); })
+    .catch((e) => console.error('[centcom] auto-capture failed:', e?.message || e));
+  sweep();
+  setInterval(sweep, 60 * 60 * 1000);
 });

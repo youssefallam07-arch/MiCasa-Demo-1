@@ -20,7 +20,8 @@
     "serve": "npm --workspace @vp/centcom run start",
     "start": "npm run db:setup && npm run seed:boot && node scripts/ensure-apps-built.mjs && npm run serve",
     "seed:boot": "npm --workspace @vp/mainframe run seed:boot",
-    "export:registry": "tsx scripts/export-registry.ts"
+    "export:registry": "tsx scripts/export-registry.ts",
+    "check:p1": "tsx scripts/check-p1.ts"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

@@ -151,6 +151,44 @@ export async function markComplete(workerId: string, jobId: string) {
   return { ok: true };
 }
 
+// --- Shared money operations (identical atomic ops; kept in one place so
+//     confirm/force/auto-capture and release/force-cancel can't drift). ---
+type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+// CAPTURE: move held commission to platform revenue (debt stays owed).
+async function captureCommission(tx: Tx, job: { id: string; acceptedWorkerId: string | null; commissionPst: number; commissionBucket: string }, note: string) {
+  const acc = await tx.serviceCreditAccount.findUnique({ where: { workerId: job.acceptedWorkerId! } });
+  if (!acc) return;
+  if (job.commissionBucket === 'held') {
+    await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { heldPst: { decrement: job.commissionPst } } });
+  }
+  await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'capture', amountPst: job.commissionPst, jobId: job.id, bucket: job.commissionBucket, note } });
+}
+
+// RELEASE: return a held commission to available, or wipe the accrued debt.
+async function releaseCommission(tx: Tx, job: { id: string; acceptedWorkerId: string | null; commissionPst: number; commissionBucket: string }, note: string) {
+  const acc = await tx.serviceCreditAccount.findUnique({ where: { workerId: job.acceptedWorkerId! } });
+  if (!acc) return;
+  if (job.commissionBucket === 'held') {
+    await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { heldPst: { decrement: job.commissionPst }, availablePst: { increment: job.commissionPst } } });
+  } else if (job.commissionBucket === 'debt') {
+    await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { debtPst: { decrement: job.commissionPst } } });
+  }
+  await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'release', amountPst: job.commissionPst, jobId: job.id, bucket: job.commissionBucket, note } });
+}
+
+// Finish a job: capture commission, mark completed, credit the worker + convert postpaid→prepaid.
+async function finalizeCompletion(tx: Tx, job: any, cfg: Record<string, string>, note: string) {
+  await captureCommission(tx, job, note);
+  await tx.job.update({ where: { id: job.id }, data: { status: 'completed', completedAt: new Date() } });
+  const wp = await tx.workerProfile.findUnique({ where: { userId: job.acceptedWorkerId! } });
+  if (wp) {
+    const completed = wp.jobsCompleted + 1;
+    const convert = wp.walletMode === 'postpaid' && completed >= Number(cfg.postpaid_job_limit);
+    await tx.workerProfile.update({ where: { id: wp.id }, data: { jobsCompleted: completed, walletMode: convert ? 'prepaid' : wp.walletMode } });
+  }
+}
+
 // ---- Customer confirms → commission CAPTURE (platform revenue) ----
 export async function confirmComplete(customerId: string, jobId: string) {
   const cfg = await getConfig();
@@ -159,22 +197,36 @@ export async function confirmComplete(customerId: string, jobId: string) {
     if (!job) throw err('job_not_found', 404);
     if (job.customerId !== customerId) throw err('not_your_job', 403);
     if (!['worker_done', 'accepted'].includes(job.status)) throw err('not_completable', 409);
-    const acc = await tx.serviceCreditAccount.findUnique({ where: { workerId: job.acceptedWorkerId! } });
-    if (acc) {
-      if (job.commissionBucket === 'held') {
-        await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { heldPst: { decrement: job.commissionPst } } });
-      }
-      await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'capture', amountPst: job.commissionPst, jobId, bucket: job.commissionBucket, note: 'commission captured on completion' } });
-    }
-    await tx.job.update({ where: { id: jobId }, data: { status: 'completed', completedAt: new Date() } });
-    const wp = await tx.workerProfile.findUnique({ where: { userId: job.acceptedWorkerId! } });
-    if (wp) {
-      const completed = wp.jobsCompleted + 1;
-      const convert = wp.walletMode === 'postpaid' && completed >= Number(cfg.postpaid_job_limit);
-      await tx.workerProfile.update({ where: { id: wp.id }, data: { jobsCompleted: completed, walletMode: convert ? 'prepaid' : wp.walletMode } });
-    }
+    await finalizeCompletion(tx, job, cfg, 'commission captured on completion');
     return { ok: true };
   });
+}
+
+// ---- Customer cancels an OPEN job → cancelled, no money moved ----
+export async function cancelOpenJob(customerId: string, jobId: string) {
+  const job = await prisma.job.findUnique({ where: { id: jobId } });
+  if (!job) throw err('job_not_found', 404);
+  if (job.customerId !== customerId) throw err('not_your_job', 403);
+  if (job.status !== 'open') throw err('not_open', 409);
+  await prisma.$transaction([
+    prisma.job.update({ where: { id: jobId }, data: { status: 'cancelled', cancelledBy: 'customer' } }),
+    prisma.bid.updateMany({ where: { jobId, status: 'active' }, data: { status: 'withdrawn' } }),
+    prisma.cancellation.create({ data: { jobId, by: 'customer', byUserId: customerId, note: 'open job cancelled by customer' } }),
+  ]);
+  return { ok: true, status: 'cancelled' };
+}
+
+// ---- Customer cancels an ACCEPTED job → pending release (mirrors worker flow, no strikes) ----
+export async function cancelByCustomer(customerId: string, jobId: string, contacted: boolean) {
+  const job = await prisma.job.findUnique({ where: { id: jobId } });
+  if (!job) throw err('job_not_found', 404);
+  if (job.customerId !== customerId) throw err('not_your_job', 403);
+  if (!['accepted', 'worker_done'].includes(job.status)) throw err('not_cancellable', 409);
+  await prisma.$transaction([
+    prisma.job.update({ where: { id: jobId }, data: { status: 'cancel_pending', cancelledBy: 'customer', contactedBeforeCancel: contacted } }),
+    prisma.cancellation.create({ data: { jobId, by: 'customer', byUserId: customerId, contacted, note: 'accepted job cancelled by customer' } }),
+  ]);
+  return { ok: true, status: 'cancel_pending' };
 }
 
 // ---- Worker cancels → pending release (hold stays) + strike logic ----
@@ -184,9 +236,13 @@ export async function cancelByWorker(workerId: string, jobId: string, contacted:
   if (!job) throw err('job_not_found', 404);
   if (job.acceptedWorkerId !== workerId) throw err('not_your_job', 403);
   if (!['accepted', 'worker_done'].includes(job.status)) throw err('not_cancellable', 409);
-  await prisma.job.update({ where: { id: jobId }, data: { status: 'cancel_pending', cancelledBy: 'worker', contactedBeforeCancel: contacted } });
+  await prisma.$transaction([
+    prisma.job.update({ where: { id: jobId }, data: { status: 'cancel_pending', cancelledBy: 'worker', contactedBeforeCancel: contacted } }),
+    prisma.cancellation.create({ data: { jobId, by: 'worker', byUserId: workerId, contacted, note: 'accepted job cancelled by worker' } }),
+  ]);
+  // Strike window counts CANCELLATION events in the last 30d — not job age (the old bug).
   const since = new Date(Date.now() - 30 * 864e5);
-  const cancels = await prisma.job.count({ where: { acceptedWorkerId: workerId, cancelledBy: 'worker', createdAt: { gte: since } } });
+  const cancels = await prisma.cancellation.count({ where: { by: 'worker', byUserId: workerId, createdAt: { gte: since } } });
   let flagged = false, suspended = false;
   if (cancels > Number(cfg.cancel_threshold)) {
     const wp = await prisma.workerProfile.findUnique({ where: { userId: workerId } });
@@ -200,24 +256,60 @@ export async function cancelByWorker(workerId: string, jobId: string, contacted:
   return { ok: true, status: 'cancel_pending', flagged, suspended };
 }
 
-// ---- Customer confirms cancel OR admin approves → RELEASE hold ----
+// ---- Counterparty confirms a cancellation OR admin approves → RELEASE hold ----
 export async function releaseHold(jobId: string, by: string) {
   return prisma.$transaction(async (tx) => {
     const job = await tx.job.findUnique({ where: { id: jobId } });
     if (!job) throw err('job_not_found', 404);
     if (job.status !== 'cancel_pending') throw err('not_pending_release', 409);
-    const acc = await tx.serviceCreditAccount.findUnique({ where: { workerId: job.acceptedWorkerId! } });
-    if (acc) {
-      if (job.commissionBucket === 'held') {
-        await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { heldPst: { decrement: job.commissionPst }, availablePst: { increment: job.commissionPst } } });
-      } else if (job.commissionBucket === 'debt') {
-        await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { debtPst: { decrement: job.commissionPst } } });
-      }
-      await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'release', amountPst: job.commissionPst, jobId, bucket: job.commissionBucket, note: `cancellation confirmed by ${by}` } });
-    }
+    await releaseCommission(tx, job, `cancellation confirmed by ${by}`);
     await tx.job.update({ where: { id: jobId }, data: { status: 'cancelled' } });
     return { ok: true };
   });
+}
+
+// ---- Admin overrides — force a stuck job to a terminal state, with a required reason ----
+export async function forceComplete(jobId: string, note: string) {
+  const cfg = await getConfig();
+  return prisma.$transaction(async (tx) => {
+    const job = await tx.job.findUnique({ where: { id: jobId } });
+    if (!job) throw err('job_not_found', 404);
+    if (!['accepted', 'worker_done', 'cancel_pending'].includes(job.status)) throw err('not_overridable', 409);
+    await finalizeCompletion(tx, job, cfg, `admin override: ${note}`);
+    return { ok: true, status: 'completed' };
+  });
+}
+
+export async function forceCancel(jobId: string, note: string) {
+  return prisma.$transaction(async (tx) => {
+    const job = await tx.job.findUnique({ where: { id: jobId } });
+    if (!job) throw err('job_not_found', 404);
+    if (!['accepted', 'worker_done', 'cancel_pending'].includes(job.status)) throw err('not_overridable', 409);
+    await releaseCommission(tx, job, `admin override: ${note}`);
+    await tx.job.update({ where: { id: jobId }, data: { status: 'cancelled', cancelledBy: 'admin' } });
+    await tx.cancellation.create({ data: { jobId, by: 'admin', note: `admin override: ${note}` } });
+    return { ok: true, status: 'cancelled' };
+  });
+}
+
+// ---- Auto-capture: worker_done jobs the customer never confirmed, past the window ----
+export async function autoCaptureStale() {
+  const cfg = await getConfig();
+  const hours = Number(cfg.auto_capture_hours || 72);
+  const cutoff = new Date(Date.now() - hours * 3600 * 1000);
+  const stale = await prisma.job.findMany({ where: { status: 'worker_done', updatedAt: { lt: cutoff } } });
+  let captured = 0;
+  for (const job of stale) {
+    try {
+      await prisma.$transaction(async (tx) => {
+        const fresh = await tx.job.findUnique({ where: { id: job.id } });
+        if (!fresh || fresh.status !== 'worker_done') return; // race guard
+        await finalizeCompletion(tx, fresh, cfg, `auto-captured after ${hours}h (customer never confirmed)`);
+      });
+      captured++;
+    } catch { /* skip an individual failure, keep going */ }
+  }
+  return { captured, scanned: stale.length };
 }
 
 // ---- Ratings ----
@@ -225,8 +317,33 @@ export async function rate(raterId: string, jobId: string, rateeId: string, star
   if (stars < 1 || stars > 5) throw err('bad_stars', 400);
   const job = await prisma.job.findUnique({ where: { id: jobId } });
   if (!job) throw err('job_not_found', 404);
-  await prisma.rating.create({ data: { jobId, raterId, rateeId, stars, comment: comment ?? null } });
-  const wp = await prisma.workerProfile.findUnique({ where: { userId: rateeId } });
-  if (wp) await prisma.workerProfile.update({ where: { id: wp.id }, data: { ratingSum: wp.ratingSum + stars, ratingCount: wp.ratingCount + 1 } });
+  // A rating is only valid on a completed job, from a participant, about the other participant.
+  if (job.status !== 'completed') throw err('job_not_completed', 409);
+  let expectedRatee: string | null = null;
+  if (raterId === job.customerId) expectedRatee = job.acceptedWorkerId;
+  else if (raterId === job.acceptedWorkerId) expectedRatee = job.customerId;
+  else throw err('not_a_participant', 403);
+  if (!expectedRatee || rateeId !== expectedRatee) throw err('bad_ratee', 400);
+  try {
+    await prisma.rating.create({ data: { jobId, raterId, rateeId, stars, comment: comment ?? null } });
+  } catch (e: any) {
+    if (e?.code === 'P2002') throw err('rating_exists', 409); // one rating per person per job
+    throw e;
+  }
+  await recomputeRatingFor(rateeId);
   return { ok: true };
+}
+
+// Recompute a worker's rating aggregate from the rating rows (authoritative — no drift).
+export async function recomputeRatingFor(userId: string) {
+  const wp = await prisma.workerProfile.findUnique({ where: { userId } });
+  if (!wp) return; // only workers carry an aggregate
+  const agg = await prisma.rating.aggregate({ where: { rateeId: userId }, _sum: { stars: true }, _count: { _all: true } });
+  await prisma.workerProfile.update({ where: { id: wp.id }, data: { ratingSum: agg._sum.stars ?? 0, ratingCount: agg._count._all } });
+}
+
+// Backfill guard — recompute every worker's aggregate (keeps seed/legacy correct).
+export async function recomputeAllRatings() {
+  const profiles = await prisma.workerProfile.findMany({ select: { userId: true } });
+  for (const p of profiles) await recomputeRatingFor(p.userId);
 }

@@ -9,6 +9,7 @@ export const CONFIG_DEFAULTS: Record<string, string> = {
   postpaid_job_limit: '3',     // completed jobs a new worker gets on debt before prepaid
   cancel_threshold: '3',       // worker cancels / 30d before a strike is applied
   max_strikes: '3',            // strikes before auto-suspension
+  auto_capture_hours: '72',    // worker_done → auto-capture if customer never confirms
 };
 
 export async function getConfig(): Promise<Record<string, string>> {

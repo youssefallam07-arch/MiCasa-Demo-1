@@ -85,10 +85,18 @@ function JobCard({ job, open, rate, reload }) {
       <div className="muted" style={{ marginBottom: 8 }}>{job.description}</div>
       <div className="muted">المنطقة: {job.zone} · ميزانيتك <span className="money">{egp(job.budgetOfferPst)}</span> ج</div>
       <div style={{ marginTop: 12 }}>
-        {job.status === 'open' && <button className="btn sm" onClick={open}>شوف العروض ({job.bids?.length || 0})</button>}
+        {job.status === 'open' && <>
+          <button className="btn sm" onClick={open}>شوف العروض ({job.bids?.length || 0})</button>
+          <button className="btn sm ghost" disabled={busy} onClick={() => { if (confirm('تلغي الطلب؟')) act(() => api(`/customer/jobs/${job.id}/cancel`, 'POST', { contacted: false })); }}>إلغاء الطلب</button>
+        </>}
         {job.status === 'worker_done' && <button className="btn sm green" disabled={busy} onClick={() => act(() => api(`/customer/jobs/${job.id}/confirm-complete`, 'POST'))}>أكّد إن الشغل خلص</button>}
-        {job.status === 'accepted' && <span className="muted">الفني في الطريق / بيشتغل…</span>}
-        {job.status === 'cancel_pending' && <button className="btn sm ghost" disabled={busy} onClick={() => act(() => api(`/customer/jobs/${job.id}/confirm-cancel`, 'POST'))}>الفني طلب إلغاء — أكّد</button>}
+        {job.status === 'accepted' && <>
+          <span className="muted">الفني في الطريق / بيشتغل…</span>
+          <button className="btn sm ghost" disabled={busy} onClick={() => { if (confirm('تطلب إلغاء الشغل؟ الفني لازم يأكّد.')) act(() => api(`/customer/jobs/${job.id}/cancel`, 'POST', { contacted: false })); }}>اطلب إلغاء</button>
+        </>}
+        {job.status === 'cancel_pending' && (job.cancelledBy === 'worker'
+          ? <button className="btn sm ghost" disabled={busy} onClick={() => act(() => api(`/customer/jobs/${job.id}/confirm-cancel`, 'POST'))}>الفني طلب إلغاء — أكّد</button>
+          : <span className="muted">في انتظار تأكيد الفني للإلغاء…</span>)}
         {job.status === 'completed' && <button className="btn sm gold" onClick={rate}>قيّم الفني</button>}
       </div>
     </div>

@@ -146,7 +146,9 @@ function MyJobs() {
             <button className="btn sm ghost" onClick={() => act(() => api(`/worker/jobs/${j.id}/cancel`, 'POST', { contacted: false }))}>إلغاء</button>
           </div>}
           {j.status === 'worker_done' && <div className="muted">مستني العميل يأكّد الإنهاء…</div>}
-          {j.status === 'cancel_pending' && <div className="muted" style={{ color: 'var(--red)' }}>الإلغاء بيتراجع من الإدارة/العميل — العمولة لسه محجوزة</div>}
+          {j.status === 'cancel_pending' && (j.cancelledBy === 'customer'
+            ? <button className="btn sm green" onClick={() => act(() => api(`/worker/jobs/${j.id}/confirm-cancel`, 'POST'))}>العميل طلب إلغاء — أكّد وارجّع العمولة</button>
+            : <div className="muted" style={{ color: 'var(--red)' }}>طلبت إلغاء — مستني تأكيد العميل/الإدارة · العمولة لسه محجوزة</div>)}
         </div>
       ))}
     </>

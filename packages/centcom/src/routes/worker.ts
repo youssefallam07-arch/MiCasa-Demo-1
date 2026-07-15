@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireRole } from '../auth';
 import { h, body } from '../helpers';
-import { listOpenJobsFor, submitBid, myJobsWorker, markComplete, cancelByWorker, accountView, requestTopup, rate, prisma } from '../core';
+import { listOpenJobsFor, submitBid, myJobsWorker, markComplete, cancelByWorker, releaseHold, accountView, requestTopup, rate, prisma } from '../core';
 
 export const workerRouter = Router();
 workerRouter.use(requireRole('worker'));
@@ -46,6 +46,14 @@ workerRouter.post('/jobs/:id/complete', h(async (req, res) => {
 
 workerRouter.post('/jobs/:id/cancel', body(z.object({ contacted: z.boolean().default(false) })), h(async (req, res) => {
   res.json(await cancelByWorker(req.user!.sub, req.params.id, req.body.contacted));
+}));
+
+// worker confirms the CUSTOMER's cancellation -> releases their own commission hold
+workerRouter.post('/jobs/:id/confirm-cancel', h(async (req, res) => {
+  const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+  if (!job || job.acceptedWorkerId !== req.user!.sub) return res.status(403).json({ error: 'not_your_job' });
+  if (job.cancelledBy !== 'customer') return res.status(409).json({ error: 'not_customer_cancel' });
+  res.json(await releaseHold(req.params.id, 'worker'));
 }));
 
 workerRouter.get('/wallet', h(async (req, res) => {
