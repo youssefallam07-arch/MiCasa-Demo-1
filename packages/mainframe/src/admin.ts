@@ -38,11 +38,13 @@ export async function setSuspended(workerId: string, on: boolean) {
 // ---- CIC data ----
 export async function listWorkers() {
   const workers = await prisma.user.findMany({ where: { role: 'worker' }, include: { workerProfile: true } });
-  const out = [];
-  for (const w of workers) {
-    const acc = await prisma.serviceCreditAccount.findUnique({ where: { workerId: w.id } });
+  // batch the wallets in one query instead of one-per-worker (was N+1)
+  const accounts = await prisma.serviceCreditAccount.findMany({ where: { workerId: { in: workers.map((w) => w.id) } } });
+  const accByWorker = new Map(accounts.map((a) => [a.workerId, a]));
+  return workers.map((w) => {
     const wp = w.workerProfile;
-    out.push({
+    const acc = accByWorker.get(w.id);
+    return {
       id: w.id, name: w.name, username: w.username, phone: w.phone,
       trade: wp?.trade, zone: wp?.zone,
       verificationStatus: wp?.verificationStatus, walletMode: wp?.walletMode,
@@ -50,9 +52,8 @@ export async function listWorkers() {
       ratingCount: wp?.ratingCount ?? 0,
       ratingAvg: wp && wp.ratingCount ? wp.ratingSum / wp.ratingCount : null,
       availablePst: acc?.availablePst ?? 0, heldPst: acc?.heldPst ?? 0, debtPst: acc?.debtPst ?? 0,
-    });
-  }
-  return out;
+    };
+  });
 }
 
 export async function verificationQueue() {
@@ -75,22 +76,21 @@ export async function walletsOverview() {
 
 export async function pendingTopups() {
   const reqs = await prisma.topupRequest.findMany({ where: { status: 'pending' }, orderBy: { createdAt: 'desc' } });
-  const withNames = [];
-  for (const r of reqs) {
-    const u = await prisma.user.findUnique({ where: { id: r.workerId } });
-    withNames.push({ ...r, workerName: u?.name ?? r.workerId });
-  }
-  return withNames;
+  const users = await prisma.user.findMany({ where: { id: { in: reqs.map((r) => r.workerId) } }, select: { id: true, name: true } });
+  const nameById = new Map(users.map((u) => [u.id, u.name]));
+  return reqs.map((r) => ({ ...r, workerName: nameById.get(r.workerId) ?? r.workerId }));
 }
 
 export async function pendingReleases() {
   const jobs = await prisma.job.findMany({ where: { status: 'cancel_pending' }, orderBy: { createdAt: 'desc' } });
-  const out = [];
-  for (const j of jobs) {
-    const w = j.acceptedWorkerId ? await prisma.user.findUnique({ where: { id: j.acceptedWorkerId } }) : null;
-    out.push({ jobId: j.id, trade: j.trade, workerName: w?.name ?? j.acceptedWorkerId, heldPst: j.commissionPst, bucket: j.commissionBucket, contactedBeforeCancel: j.contactedBeforeCancel });
-  }
-  return out;
+  const workerIds = jobs.map((j) => j.acceptedWorkerId).filter(Boolean) as string[];
+  const users = await prisma.user.findMany({ where: { id: { in: workerIds } }, select: { id: true, name: true } });
+  const nameById = new Map(users.map((u) => [u.id, u.name]));
+  return jobs.map((j) => ({
+    jobId: j.id, trade: j.trade,
+    workerName: (j.acceptedWorkerId && nameById.get(j.acceptedWorkerId)) || j.acceptedWorkerId,
+    heldPst: j.commissionPst, bucket: j.commissionBucket, contactedBeforeCancel: j.contactedBeforeCancel, cancelledBy: j.cancelledBy,
+  }));
 }
 
 export async function jobsTable() {
@@ -121,47 +121,52 @@ export async function dashboard() {
     commissionCapturedPst: captured._sum.amountPst ?? 0,
     pendingTopups: await prisma.topupRequest.count({ where: { status: 'pending' } }),
     pendingReleases: await prisma.job.count({ where: { status: 'cancel_pending' } }),
-    verificationQueue: (await verificationQueue()).length,
+    verificationQueue: await prisma.workerProfile.count({ where: { verificationStatus: { notIn: ['approved', 'rejected'] } } }),
   };
 }
 
 // ---- CENTCOM: full account registry (every signup, every role, persistent) ----
 export async function allAccounts() {
   const users = await prisma.user.findMany({ orderBy: { createdAt: 'desc' }, include: { workerProfile: true } });
-  const out = [];
-  for (const u of users) {
-    let credit = null;
-    if (u.role === 'worker') credit = await prisma.serviceCreditAccount.findUnique({ where: { workerId: u.id } });
-    const [jobsPosted, bidsMade] = await Promise.all([
-      u.role === 'customer' ? prisma.job.count({ where: { customerId: u.id } }) : Promise.resolve(0),
-      u.role === 'worker' ? prisma.bid.count({ where: { workerId: u.id } }) : Promise.resolve(0),
-    ]);
-    out.push({
+  const workerIds = users.filter((u) => u.role === 'worker').map((u) => u.id);
+  const customerIds = users.filter((u) => u.role === 'customer').map((u) => u.id);
+  // one query each for wallets, jobs-posted, and bids-made (was 3 queries PER user)
+  const [accounts, jobGroups, bidGroups] = await Promise.all([
+    prisma.serviceCreditAccount.findMany({ where: { workerId: { in: workerIds } } }),
+    prisma.job.groupBy({ by: ['customerId'], where: { customerId: { in: customerIds } }, _count: { _all: true } }),
+    prisma.bid.groupBy({ by: ['workerId'], where: { workerId: { in: workerIds } }, _count: { _all: true } }),
+  ]);
+  const accByWorker = new Map(accounts.map((a) => [a.workerId, a]));
+  const jobsByCustomer = new Map(jobGroups.map((g) => [g.customerId, g._count._all]));
+  const bidsByWorker = new Map(bidGroups.map((g) => [g.workerId, g._count._all]));
+  return users.map((u) => {
+    const credit = u.role === 'worker' ? accByWorker.get(u.id) : null;
+    return {
       id: u.id, role: u.role, username: u.username, name: u.name, phone: u.phone, createdAt: u.createdAt,
       trade: u.workerProfile?.trade ?? null, zone: u.workerProfile?.zone ?? null,
       verificationStatus: u.workerProfile?.verificationStatus ?? null,
       walletMode: u.workerProfile?.walletMode ?? null, suspended: u.workerProfile?.suspended ?? null,
       jobsCompleted: u.workerProfile?.jobsCompleted ?? null,
       availablePst: credit?.availablePst ?? null, heldPst: credit?.heldPst ?? null, debtPst: credit?.debtPst ?? null,
-      jobsPosted, bidsMade,
-    });
-  }
-  return out;
+      jobsPosted: jobsByCustomer.get(u.id) ?? 0, bidsMade: bidsByWorker.get(u.id) ?? 0,
+    };
+  });
 }
 
 export async function platformOverview() {
-  const [customers, workers, admins, jobs, completed, open, captured] = await Promise.all([
+  const [customers, workers, admins, jobs, completed, open, captured, pendingVetting] = await Promise.all([
     prisma.user.count({ where: { role: 'customer' } }),
     prisma.user.count({ where: { role: 'worker' } }),
     prisma.user.count({ where: { role: 'admin' } }),
     prisma.job.count(), prisma.job.count({ where: { status: 'completed' } }),
     prisma.job.count({ where: { status: 'open' } }),
     prisma.serviceCreditTxn.aggregate({ _sum: { amountPst: true }, where: { type: 'capture' } }),
+    prisma.workerProfile.count({ where: { verificationStatus: { notIn: ['approved', 'rejected'] } } }),
   ]);
   return {
     customers, workers, admins, totalAccounts: customers + workers + admins,
     jobs, completed, open, commissionCapturedPst: captured._sum.amountPst ?? 0,
-    pendingVetting: (await verificationQueue()).length,
+    pendingVetting,
   };
 }
 
