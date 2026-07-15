@@ -1,8 +1,23 @@
+import bcrypt from 'bcryptjs';
 import { prisma } from './db';
 import { getConfig, setConfig } from './config';
 import { confirmTopup } from './credit';
 import { releaseHold } from './marketplace';
 import { err } from './errors';
+
+// Make the admin login deterministic on hosted deploys: if ADMIN_PASSWORD is set,
+// force the owner account's password to match it on every boot. Lets the owner
+// control the live credential from the Render env var regardless of DB state.
+// (No ADMIN_PASSWORD -> no-op, so local dev keeps its seeded password.)
+export async function reconcileAdminFromEnv() {
+  const pw = process.env.ADMIN_PASSWORD;
+  if (!pw) return { skipped: true as const };
+  const username = process.env.ADMIN_USERNAME || 'youssef_hq';
+  const user = await prisma.user.findUnique({ where: { username } });
+  if (!user || user.role !== 'admin') return { skipped: true as const, reason: 'no_admin' };
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: bcrypt.hashSync(pw, 10) } });
+  return { updated: true as const, username };
+}
 
 // ---- Worker verification & moderation ----
 const VERIF = ['pending', 'interviewed', 'trial', 'approved', 'rejected'];

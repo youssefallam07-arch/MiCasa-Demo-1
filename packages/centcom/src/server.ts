@@ -12,7 +12,7 @@ import { customerRouter } from './routes/customer';
 import { workerRouter } from './routes/worker';
 import { adminRouter } from './routes/admin';
 import { landingHtml } from './landing';
-import { autoCaptureStale, recomputeAllRatings } from './core';
+import { autoCaptureStale, recomputeAllRatings, admin } from './core';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const appsDir = path.resolve(here, '../../../apps');
@@ -62,6 +62,10 @@ app.use(errorHandler);
 
 app.listen(ENV.PORT, () => {
   console.log(`[centcom] API + apps on http://localhost:${ENV.PORT}`);
+  // If ADMIN_PASSWORD is set (hosted deploys), make the owner login match it.
+  admin.reconcileAdminFromEnv()
+    .then((r) => { if ('updated' in r && r.updated) console.log(`[centcom] admin password synced from ADMIN_PASSWORD for @${r.username}`); })
+    .catch((e) => console.error('[centcom] admin reconcile failed:', e?.message || e));
   // Backfill rating aggregates once, then auto-capture stale worker_done jobs on boot + hourly.
   recomputeAllRatings().catch((e) => console.error('[centcom] rating backfill failed:', e?.message || e));
   const sweep = () => autoCaptureStale()
