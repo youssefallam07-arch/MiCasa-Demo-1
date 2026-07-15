@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { z } from 'zod';
 import { requireRole, signImpersonation } from '../auth';
 import { h, body } from '../helpers';
@@ -31,6 +32,17 @@ adminRouter.get('/registry.xlsx', h(async (_req, res) => {
   res.end();
 }));
 adminRouter.delete('/users/:id', h(async (req, res) => res.json(await admin.deleteAccount(req.params.id))));
+
+// Admin-set password: reset any account to a strong password, returned ONCE for the
+// admin to copy. Still stored only as a bcrypt hash — no plaintext is persisted.
+const genPassword = () => crypto.randomBytes(12).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 14).padEnd(14, 'x');
+adminRouter.post('/users/:id/set-password', body(z.object({ password: z.string().min(8).optional() })), h(async (req, res) => {
+  const u = await prisma.user.findUnique({ where: { id: req.params.id } });
+  if (!u) return res.status(404).json({ error: 'not_found' });
+  const password = req.body.password || genPassword();
+  await prisma.user.update({ where: { id: u.id }, data: { passwordHash: bcrypt.hashSync(password, 10) } });
+  res.json({ ok: true, username: u.username, password });
+}));
 
 // "Open as" — mint a short-lived token to log in as any account (no password needed/stored).
 adminRouter.post('/users/:id/impersonate', h(async (req, res) => {
