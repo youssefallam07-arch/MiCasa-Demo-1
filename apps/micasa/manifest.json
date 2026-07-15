@@ -1,0 +1,15 @@
+{
+  "name": "MiCasa — Home services, elevated",
+  "short_name": "MiCasa",
+  "description": "Vetted home-service specialists and curated products. Name your price.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060B16",
+  "theme_color": "#060B16",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

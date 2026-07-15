@@ -48,12 +48,30 @@ app.use('/api/customer', customerRouter);
 app.use('/api/worker', workerRouter);
 app.use('/api/admin', adminRouter);
 
-// ---- serve the three built apps (run `npm run build:apps` first) ----
-for (const a of ['customer', 'workers', 'cic', 'centcom']) {
+// ---- serve the built React apps (run `npm run build:apps` first) ----
+for (const a of ['workers', 'cic', 'centcom']) {
   const dist = path.join(appsDir, a, 'dist');
   app.use(`/${a}`, express.static(dist));
   app.get(`/${a}`, (_req, res) => res.redirect(`/${a}/`)); // no-slash -> slash
 }
+
+// ---- the real MiCasa customer app (original single-file UI, wired to /api) ----
+// It's a first-party static app that relies on inline scripts + a few known CDNs
+// (Leaflet, Google Fonts, OSM tiles), so relax CSP for THIS route only. The strict
+// P0 policy stays on the API and the React apps.
+const micasaDir = path.join(appsDir, 'micasa');
+const micasaCsp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://unpkg.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' data: https:",
+  "connect-src 'self' https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org",
+  "worker-src 'self' blob:",
+].join('; ');
+app.use('/customer', (_req, res, next) => { res.setHeader('Content-Security-Policy', micasaCsp); next(); });
+app.use('/customer', express.static(micasaDir));
+app.get('/customer', (_req, res) => res.redirect('/customer/'));
 
 // ---- landing page: one menu to open every app, with test logins ----
 app.get('/', (_req, res) => res.type('html').send(landingHtml()));

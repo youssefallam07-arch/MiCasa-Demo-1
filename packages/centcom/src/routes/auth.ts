@@ -9,7 +9,7 @@ export const authRouter = Router();
 
 const registerSchema = z.object({
   role: z.enum(['customer', 'worker']),
-  username: z.string().min(3).max(30),
+  username: z.string().min(3).max(64), // accepts an email as the identifier
   password: z.string().min(6),
   name: z.string().min(2),
   phone: z.string().optional(),
