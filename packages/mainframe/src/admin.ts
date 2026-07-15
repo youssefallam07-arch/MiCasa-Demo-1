@@ -250,7 +250,7 @@ export async function registerWorker(d: { name: string; phone?: string; trade?: 
   while (await prisma.user.findUnique({ where: { username } })) { n++; username = base + n; }
   const password = crypto.randomBytes(8).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10).padEnd(10, 'x');
   const user = await prisma.user.create({ data: { role: 'worker', username, name: d.name, phone: d.phone ?? null, passwordHash: bcrypt.hashSync(password, 10) } });
-  await prisma.workerProfile.create({ data: { userId: user.id, trade: d.trade || 'handyman', zone: d.zone || 'المعادي', verificationStatus: d.approve ? 'approved' : 'pending', walletMode: 'postpaid' } });
+  await prisma.workerProfile.create({ data: { userId: user.id, trade: d.trade || 'handyman', zone: d.zone || 'المعادي', verificationStatus: d.approve ? 'approved' : 'pending', walletMode: 'prepaid' } });
   await prisma.serviceCreditAccount.create({ data: { workerId: user.id } });
   return { ok: true, workerId: username, username, password, status: d.approve ? 'approved' : 'pending' };
 }

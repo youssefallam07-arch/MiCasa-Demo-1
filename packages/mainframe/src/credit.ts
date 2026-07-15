@@ -21,15 +21,14 @@ export async function accountView(workerId: string) {
 }
 
 // Bidding gate — pure check, no mutation. Used to warn workers and hide unbiddable jobs.
+// Prepaid-only (anti-fraud): a worker must hold POSITIVE credit >= the commission to
+// bid or accept. There is no postpaid/grace path and no debt is ever created.
 export async function checkCoverage(workerId: string, commissionPst: number) {
-  const cfg = await getConfig();
   const wp = await prisma.workerProfile.findUnique({ where: { userId: workerId } });
   if (!wp) return { ok: false, reason: 'no_profile', availablePst: 0 };
   if (wp.suspended) return { ok: false, reason: 'suspended', availablePst: 0 };
   if (wp.verificationStatus !== 'approved') return { ok: false, reason: 'not_verified', availablePst: 0 };
   const acc = await getOrCreateAccount(workerId);
-  if (wp.walletMode === 'postpaid' && wp.jobsCompleted < Number(cfg.postpaid_job_limit))
-    return { ok: true, reason: 'postpaid', availablePst: acc.availablePst };
   if (acc.debtPst > 0) return { ok: false, reason: 'debt_unsettled', availablePst: acc.availablePst };
   if (acc.availablePst >= commissionPst) return { ok: true, reason: '', availablePst: acc.availablePst };
   return { ok: false, reason: 'insufficient', availablePst: acc.availablePst };

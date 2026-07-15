@@ -116,23 +116,17 @@ export async function acceptBid(customerId: string, jobId: string, bidId: string
       where: { workerId: bid.workerId }, create: { workerId: bid.workerId }, update: {},
     });
 
-    const postpaidGrace = wp.walletMode === 'postpaid' && wp.jobsCompleted < Number(cfg.postpaid_job_limit);
-    let bucket: string;
-    if (postpaidGrace) {
-      bucket = 'debt';
-      await tx.serviceCreditAccount.update({ where: { id: acc.id }, data: { debtPst: { increment: commission } } });
-      await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'hold', amountPst: commission, jobId, bucket: 'debt', note: 'commission accrued (postpaid grace)' } });
-    } else {
-      if (acc.debtPst > 0) throw err('debt_unsettled', 402);
-      // guarded decrement: only applies if the balance still covers it -> no overdraw under races
-      const moved = await tx.serviceCreditAccount.updateMany({
-        where: { id: acc.id, availablePst: { gte: commission } },
-        data: { availablePst: { decrement: commission }, heldPst: { increment: commission } },
-      });
-      if (moved.count === 0) throw err('insufficient_credit', 402);
-      bucket = 'held';
-      await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'hold', amountPst: commission, jobId, bucket: 'held', note: 'commission escrow on acceptance' } });
-    }
+    // Prepaid-only (anti-fraud): commission is always HELD from positive available
+    // credit. No debt is ever created — a worker with insufficient credit is rejected.
+    if (acc.debtPst > 0) throw err('debt_unsettled', 402);
+    // guarded decrement: only applies if the balance still covers it -> no overdraw under races
+    const moved = await tx.serviceCreditAccount.updateMany({
+      where: { id: acc.id, availablePst: { gte: commission } },
+      data: { availablePst: { decrement: commission }, heldPst: { increment: commission } },
+    });
+    if (moved.count === 0) throw err('insufficient_credit', 402);
+    const bucket = 'held';
+    await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'hold', amountPst: commission, jobId, bucket: 'held', note: 'commission escrow on acceptance' } });
     // claim the job atomically — a second concurrent acceptance finds count 0 and rolls back
     const claimed = await tx.job.updateMany({
       where: { id: jobId, status: 'open' },
@@ -183,15 +177,14 @@ async function releaseCommission(tx: Tx, job: { id: string; acceptedWorkerId: st
   await tx.serviceCreditTxn.create({ data: { accountId: acc.id, type: 'release', amountPst: job.commissionPst, jobId: job.id, bucket: job.commissionBucket, note } });
 }
 
-// Finish a job: capture commission, mark completed, credit the worker + convert postpaid→prepaid.
-async function finalizeCompletion(tx: Tx, job: any, cfg: Record<string, string>, note: string) {
+// Finish a job: capture commission, mark completed, credit the worker with the job count.
+// (walletMode is no longer gating anything — bidding is prepaid-only — so it's left untouched.)
+async function finalizeCompletion(tx: Tx, job: any, _cfg: Record<string, string>, note: string) {
   await captureCommission(tx, job, note);
   await tx.job.update({ where: { id: job.id }, data: { status: 'completed', completedAt: new Date() } });
   const wp = await tx.workerProfile.findUnique({ where: { userId: job.acceptedWorkerId! } });
   if (wp) {
-    const completed = wp.jobsCompleted + 1;
-    const convert = wp.walletMode === 'postpaid' && completed >= Number(cfg.postpaid_job_limit);
-    await tx.workerProfile.update({ where: { id: wp.id }, data: { jobsCompleted: completed, walletMode: convert ? 'prepaid' : wp.walletMode } });
+    await tx.workerProfile.update({ where: { id: wp.id }, data: { jobsCompleted: wp.jobsCompleted + 1 } });
   }
 }
 

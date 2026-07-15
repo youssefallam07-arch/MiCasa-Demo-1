@@ -18,6 +18,7 @@ async function wipe() {
   await prisma.topupRequest.deleteMany();
   await prisma.rating.deleteMany();
   await prisma.bid.deleteMany();
+  await prisma.cancellation.deleteMany(); // Cancellation.jobId FK -> Job; must go before jobs
   await prisma.job.deleteMany();
   await prisma.workerProfile.deleteMany();
   await prisma.user.deleteMany();
@@ -57,19 +58,23 @@ async function main() {
     return u;
   }
   const ahmed = await makeWorker('ahmed', 'أحمد السباك', 'plumbing', 'المعادي', 'approved', 'prepaid');   // funded, prepaid
-  const mahmoud = await makeWorker('mahmoud', 'محمود الكهربائي', 'electrical', 'المعادي', 'approved', 'postpaid'); // new, postpaid grace
-  await makeWorker('saeed', 'سعيد النجار', 'carpentry', 'مدينة نصر', 'pending', 'postpaid');               // in verification queue
+  const mahmoud = await makeWorker('mahmoud', 'محمود الكهربائي', 'electrical', 'المعادي', 'approved', 'prepaid'); // funded, prepaid
+  await makeWorker('saeed', 'سعيد النجار', 'carpentry', 'مدينة نصر', 'pending', 'prepaid');               // in verification queue
 
-  // fund Ahmed's service credit (manual top-up → admin-confirmed)
-  const tu = await requestTopup(ahmed.id, 20000, 'vodafone_cash');
-  await confirmTopup(tu.ref);
+  // fund service credit (manual top-up → admin-confirmed). Prepaid-only: a worker
+  // must hold positive credit >= commission to bid AND to accept, so every worker
+  // that transacts below is funded up front.
+  const tuA = await requestTopup(ahmed.id, 20000, 'vodafone_cash');
+  await confirmTopup(tuA.ref);
+  const tuM = await requestTopup(mahmoud.id, 20000, 'vodafone_cash');
+  await confirmTopup(tuM.ref);
 
   // ---- 4 jobs in different states ----
   // j1: OPEN with a bid
   const j1 = await postJob(mona.id, { trade: 'plumbing', description: 'حنفية المطبخ بتنقّط مياه', zone: 'المعادي', budgetOfferPst: 30000, urgency: 'standard' });
   await submitBid(ahmed.id, j1.id, 28000, 30);
 
-  // j2: ACCEPTED (postpaid worker → commission accrues as debt; visible hold in CIC)
+  // j2: ACCEPTED (prepaid worker → commission held in escrow; visible in CIC)
   const j2 = await postJob(mona.id, { trade: 'electrical', description: 'فيشة الغرفة بتفصل الكهربا', zone: 'المعادي', budgetOfferPst: 25000, urgency: 'standard' });
   const b2 = await submitBid(mahmoud.id, j2.id, 24000, 25);
   await acceptBid(mona.id, j2.id, b2.bidId);
@@ -95,7 +100,7 @@ async function main() {
     '- Password: `' + adminPw + '`', '',
     '## Test accounts (local seed, password `password123`)',
     '- Customers: `mona`, `khaled`',
-    '- Workers: `ahmed` (approved, prepaid, funded), `mahmoud` (approved, postpaid), `saeed` (pending verification)', '',
+    '- Workers: `ahmed` (approved, prepaid, funded), `mahmoud` (approved, prepaid, funded), `saeed` (pending verification)', '',
   ].join('\n'));
 
   const box = (s: string) => { const line = '═'.repeat(s.length + 4); return `\n╔${line}╗\n║  ${s}  ║\n╚${line}╝\n`; };

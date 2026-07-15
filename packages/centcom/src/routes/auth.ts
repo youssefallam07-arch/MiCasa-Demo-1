@@ -23,7 +23,7 @@ authRouter.post('/register', body(registerSchema), h(async (req, res) => {
   if (exists) return res.status(409).json({ error: 'username_taken' });
   const user = await prisma.user.create({ data: { role, username, name, phone: phone ?? null, passwordHash: bcrypt.hashSync(password, 10) } });
   if (role === 'worker') {
-    await prisma.workerProfile.create({ data: { userId: user.id, trade: trade || 'handyman', zone: zone || 'المعادي', verificationStatus: 'pending', walletMode: 'postpaid' } });
+    await prisma.workerProfile.create({ data: { userId: user.id, trade: trade || 'handyman', zone: zone || 'المعادي', verificationStatus: 'pending', walletMode: 'prepaid' } });
     await prisma.serviceCreditAccount.create({ data: { workerId: user.id } });
   }
   logEvent(user.id, 'account.created', username, `self sign-up (${role})`);
