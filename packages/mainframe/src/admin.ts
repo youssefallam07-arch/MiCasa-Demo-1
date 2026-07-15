@@ -202,7 +202,7 @@ export async function centcomOverview() {
   const ownerName = process.env.ADMIN_USERNAME || 'youssef_hq';
 
   const accounts = users.filter((u) => u.role === 'customer').map((u) => ({
-    name: u.name, email: u.username, phone: u.phone || '', password: '', // real user passwords are hashed — never shown
+    id: u.id, name: u.name, email: u.username, phone: u.phone || '', password: '', // real user passwords are hashed — never shown
     verifiedEmail: false, verifiedPhone: false, wallet: 0, points: 0, lang: 'en', lastSeen: u.createdAt.toISOString(),
   }));
   const admins = users.filter((u) => u.role === 'admin').map((u) => ({

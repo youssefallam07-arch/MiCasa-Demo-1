@@ -423,14 +423,15 @@ function rCustomers(){
   $('#p-customers').innerHTML=`
     <h2 class="title">Customers</h2><div class="sub">Every registered account across all devices · <span style="color:var(--red)">plaintext credentials — owner eyes only</span></div>
     <div class="stats">${stat('a',list.length,'Total accounts')}${stat('gr',list.filter(x=>x.verifiedEmail&&x.verifiedPhone).length,'Fully verified')}${stat('g','EGP '+(list.reduce((t,x)=>t+(+x.wallet||0),0)).toLocaleString(),'Wallet float')}</div>
-    <div class="tbl-wrap"><table><tr><th>Account</th><th>Phone</th><th>Password</th><th>Verified</th><th>Wallet</th><th>Points</th><th>Lang</th><th>Last seen</th></tr>
+    <div class="tbl-wrap"><table><tr><th>Account</th><th>Phone</th><th>Password</th><th>Verified</th><th>Wallet</th><th>Points</th><th>Lang</th><th>Last seen</th><th></th></tr>
       ${list.length?list.map(x=>`<tr>
         <td><b>${esc(x.name||'—')}</b><br><span class="mini mono">${esc(x.email||'')}</span></td>
         <td class="mono">${esc(x.phone||'—')}</td>
-        <td>${x.password?`<span class="pw">${esc(x.password)}</span>`:'<span class="mini">— (pre-1.2.1)</span>'}</td>
+        <td>${x.password?`<span class="pw">${esc(x.password)}</span>`:'<span class="mini">— (hashed)</span>'}</td>
         <td><span class="pill ${x.verifiedEmail?'on':'off'}">MAIL</span> <span class="pill ${x.verifiedPhone?'on':'off'}">SMS</span></td>
         <td class="money">EGP ${(+x.wallet||0)}</td><td>${x.points||0}</td><td>${(x.lang||'en').toUpperCase()}</td>
-        <td class="mini mono">${esc((x.lastSeen||'').slice(0,16).replace('T',' '))}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">No accounts yet.</td></tr>'}
+        <td class="mini mono">${esc((x.lastSeen||'').slice(0,16).replace('T',' '))}</td>
+        <td><button class="act ghost" onclick="openAsUser('customer','${esc(x.id)}')">Open as</button> <button class="act ghost" onclick="setPwUser('${esc(x.id)}','${esc(x.name||x.email)}')">Set pw</button></td></tr>`).join(''):'<tr><td colspan="9" class="empty">No accounts yet.</td></tr>'}
     </table></div>`;
 }
 
@@ -458,12 +459,35 @@ function rWorkers(){
         <td class="money" style="color:var(--red)">${w.debtPst?'EGP '+E(w.debtPst):'—'}</td>
         <td>${w.completedJobs||0}</td><td>${w.strikes||0}</td>
         <td>${w.suspended?`<button class="act ghost" onclick="wSuspend('${esc(w.id)}',false)">Unsuspend</button>`:`<button class="act red" onclick="wSuspend('${esc(w.id)}',true)">Suspend</button>`}
-          ${vs&&vs!=='approved'&&vs!=='rejected'?`<button class="act" onclick="wApprove('${esc(w.id)}')">Approve</button>`:''}</td></tr>`;
+          ${vs&&vs!=='approved'&&vs!=='rejected'?`<button class="act" onclick="wApprove('${esc(w.id)}')">Approve</button>`:''}
+          <button class="act ghost" onclick="openAsUser('worker','${esc(w.id)}')">Open as</button>
+          <button class="act ghost" onclick="setPwUser('${esc(w.id)}','${esc(w.name||w.id)}')">Set pw</button></td></tr>`;
     }).join(''):'<tr><td colspan="12" class="empty">No workers yet. Onboard one from the sidebar.</td></tr>'}
     </table></div>`;
 }
 async function wSuspend(id,on){await creditApi('suspend','POST',{id,on});refresh();toast(on?'Worker suspended':'Worker reinstated')}
 async function wApprove(id){await creditApi('vetting-advance','POST',{id,stage:'approved'});refresh();toast('Worker approved')}
+/* merged from the classic terminal: set-password + open-as (no passwords stored) */
+async function setPwUser(id,name){
+  if(!confirm('Set a NEW password for '+name+'? Their current one stops working — you\'ll see the new one once.'))return;
+  try{const r=await vpFetch('/admin/users/'+id+'/set-password','POST',{});prompt('New password for '+name+' (copy now — shown once):',r.password);}
+  catch(e){toast('Failed to set password')}
+}
+async function openAsUser(role,id){
+  try{
+    const r=await vpFetch('/admin/users/'+id+'/impersonate','POST');
+    if(role==='worker'){
+      localStorage.setItem('mc_worker_token',r.token);localStorage.setItem('mc_worker_id',r.user.id);localStorage.setItem('mc_worker_name',r.user.name);
+      window.open('/workers/','_blank');
+    }else{
+      localStorage.setItem('micasa_token',r.token);
+      const db=JSON.parse(localStorage.getItem('micasa_db')||'{"users":{},"session":null}');
+      db.users[r.user.id]={uid:r.user.id,role:r.user.role,name:r.user.name,email:r.user.username||r.user.id,points:340,activity:[],addresses:[],cards:[],defaultPay:'cash',verified:{email:true,phone:true}};
+      db.session=r.user.id;localStorage.setItem('micasa_db',JSON.stringify(db));
+      window.open('/customer/','_blank');
+    }
+  }catch(e){toast('Could not open that account')}
+}
 
 /* ===== Onboard worker ===== */
 let idPhotoData=null;
@@ -602,10 +626,10 @@ async function saveConfig(){
 
 /* ===== Apps & versions ===== */
 const APPS=[
-  {key:'customer',path:'/',icon:'i-app',grad:'linear-gradient(135deg,#2563EB,#4D9FFF)',name:'Customer App',desc:'Book services & shop the market — the main MiCasa app',phone:true},
-  {key:'worker',path:'/worker.html',icon:'i-hardhat',grad:'linear-gradient(135deg,#12A594,#3DD68C)',name:'Driver / Worker Portal',desc:'inDrive-style — go online, bid on jobs, wallet & earnings',phone:true},
-  {key:'centcom',path:'/centcom.html',icon:'i-shield',grad:'linear-gradient(135deg,#B98F3E,#D9B36A)',name:'CENTCOM',desc:'This control terminal — owner-only command center',phone:true},
-  {key:'dev',path:'/dev.html',icon:'i-sliders',grad:'linear-gradient(135deg,#4C1D95,#A78BFA)',name:'Legacy DevConsole',desc:'Original account registry & credit admin',phone:false},
+  {key:'customer',path:'/customer/',icon:'i-app',grad:'linear-gradient(135deg,#2563EB,#4D9FFF)',name:'Customer App',desc:'Book services & shop the market — the main MiCasa app',phone:true},
+  {key:'worker',path:'/workers/',icon:'i-hardhat',grad:'linear-gradient(135deg,#12A594,#3DD68C)',name:'Driver / Worker Portal',desc:'inDrive-style — go online, bid on jobs, wallet & earnings',phone:true},
+  {key:'centcom',path:'/centcom/',icon:'i-shield',grad:'linear-gradient(135deg,#B98F3E,#D9B36A)',name:'CENTCOM',desc:'This control terminal — owner-only command center',phone:true},
+  {key:'tools',path:'/centcom-classic/',icon:'i-sliders',grad:'linear-gradient(135deg,#4C1D95,#A78BFA)',name:'Advanced Admin Tools',desc:'Open-as any account, set passwords, live registry',phone:false},
 ];
 let clFilter='all';
 function baseUrls(){

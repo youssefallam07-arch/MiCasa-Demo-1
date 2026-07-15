@@ -99,4 +99,12 @@ app.listen(ENV.PORT, () => {
     .catch((e) => console.error('[centcom] auto-capture failed:', e?.message || e));
   sweep();
   setInterval(sweep, 60 * 60 * 1000);
+
+  // Keep the free hosted instance awake 24/7: self-ping every 10 min so it never
+  // idles out (Render injects RENDER_EXTERNAL_URL). No-op locally.
+  const selfUrl = (process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || '').replace(/\/$/, '');
+  if (selfUrl) {
+    console.log('[centcom] 24/7 keep-alive self-ping ->', selfUrl);
+    setInterval(() => { fetch(selfUrl + '/health').catch(() => {}); }, 10 * 60 * 1000);
+  }
 });
