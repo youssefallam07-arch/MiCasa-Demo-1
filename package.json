@@ -18,7 +18,7 @@
     "dev:workers": "npm --workspace @vp/workers run dev",
     "build:apps": "npm --workspace @vp/cic run build && npm --workspace @vp/centcom-ui run build",
     "serve": "npm --workspace @vp/centcom run start",
-    "start": "npm run db:setup && npm run seed:boot && npm run build:apps && npm run serve",
+    "start": "npm run db:setup && npm run seed:boot && npm run serve",
     "seed:boot": "npm --workspace @vp/mainframe run seed:boot",
     "export:registry": "tsx scripts/export-registry.ts",
     "check:p1": "tsx scripts/check-p1.ts"
