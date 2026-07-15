@@ -6,6 +6,7 @@ import { requireRole, signImpersonation } from '../auth';
 import { h, body } from '../helpers';
 import { admin, prisma, forceComplete, forceCancel, recordStaffCredential, getStaffCredentials, logEvent, listAuditEvents } from '../core';
 import { buildRegistryWorkbook } from '../registry-xlsx';
+import { casaAsk, casaEnabled } from '../casa';
 
 export const adminRouter = Router();
 adminRouter.use(requireRole('admin'));
@@ -20,6 +21,17 @@ adminRouter.get('/jobs', h(async (_req, res) => res.json({ jobs: await admin.job
 adminRouter.get('/config', h(async (_req, res) => res.json({ config: await admin.getConfig() })));
 // CIC "Brain" — one intelligence snapshot (health, pulse, anomalies, demand, recommendations, risk).
 adminRouter.get('/brain', h(async (_req, res) => res.json(await admin.computeBrain())));
+// Casa Brain console — natural-language Q&A over the live brain snapshot. Uses the
+// Claude API when ANTHROPIC_API_KEY is configured (source:'claude'); otherwise tells
+// the CIC to use its built-in data-driven responder (source:'local'). The API key
+// lives only in the server environment — it is never sent to the client.
+adminRouter.post('/brain/ask', body(z.object({ question: z.string().min(1).max(1000) })), h(async (req, res) => {
+  const brain = await admin.computeBrain();
+  const answer = casaEnabled() ? await casaAsk(req.body.question, brain) : null;
+  if (!answer) return res.json({ source: 'local' });
+  logEvent(req.user!.sub, 'casa.ask', 'brain', req.body.question.slice(0, 140));
+  res.json({ source: 'claude', answer });
+}));
 
 // ---- CENTCOM (owner master view) ----
 adminRouter.get('/registry', h(async (_req, res) => res.json({ accounts: await admin.allAccounts() })));

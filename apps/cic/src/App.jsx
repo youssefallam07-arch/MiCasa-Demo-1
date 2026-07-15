@@ -162,6 +162,8 @@ function Brain({ brain, reload, setPage }) {
   const [toast, setToast] = useState('');
   const [q, setQ] = useState('');
   const [answer, setAnswer] = useState('');
+  const [asking, setAsking] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState(false); // true when the answer came from Claude (not the local responder)
   useEffect(() => { localStorage.setItem('cic_focus', focus); }, [focus]);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 4000); return () => clearTimeout(t); }, [toast]);
 
@@ -179,7 +181,21 @@ function Brain({ brain, reload, setPage }) {
     catch (e) { setToast('✗ ' + (e.data?.error || 'failed')); }
     finally { setBusy(''); }
   }
-  function ask() { setAnswer(askBrain(q, brain)); }
+  // Try the server's Casa AI (Claude) first; fall back to the local data-driven
+  // responder if no API key is configured server-side or the call fails.
+  async function runAsk(question) {
+    const query = (question ?? q).trim();
+    if (!query) return;
+    setQ(query);
+    setAsking(true);
+    try {
+      const r = await api('/admin/brain/ask', 'POST', { question: query });
+      if (r.source === 'claude' && r.answer) { setAnswer(r.answer); setAiAnswer(true); }
+      else { setAnswer(askBrain(query, brain)); setAiAnswer(false); }
+    } catch {
+      setAnswer(askBrain(query, brain)); setAiAnswer(false);
+    } finally { setAsking(false); }
+  }
 
   const p = brain.pulse;
   return (
@@ -288,16 +304,16 @@ function Brain({ brain, reload, setPage }) {
       <div className="lens">
         <div className="lens-head"><span className="lens-tag casa">CASA BRAIN</span><span className="lens-desc">Ask about the platform in plain language</span></div>
         <div className="card">
-          <div className="casa-note">Answers from live platform data. Connect a Claude API key to enable full natural-language reasoning.</div>
+          <div className="casa-note">Ask about the platform in plain language — answered over live data. With a Claude API key set on the server, Casa reasons with the full model; otherwise it answers from the built-in engine.</div>
           <div className="casa-in">
             <input value={q} placeholder="e.g. how's our health? · which zones need workers? · who's high risk?"
-              onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask()} />
-            <button className="act" onClick={ask}>Ask</button>
+              onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && runAsk()} disabled={asking} />
+            <button className="act" onClick={() => runAsk()} disabled={asking}>{asking ? '…' : 'Ask'}</button>
           </div>
-          {answer && <div className="casa-out">{answer}</div>}
+          {answer && <div className="casa-out">{aiAnswer && <span className="pill gold">Casa AI</span>} {answer}</div>}
           <div className="casa-chips">
             {["How's our health?", 'Which zones need workers?', "Who's high risk?", "How's our liquidity?", 'What should I do next?'].map((c) => (
-              <button key={c} className="chip" onClick={() => { setQ(c); setAnswer(askBrain(c, brain)); }}>{c}</button>
+              <button key={c} className="chip" disabled={asking} onClick={() => runAsk(c)}>{c}</button>
             ))}
           </div>
         </div>

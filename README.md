@@ -26,7 +26,7 @@ Always-on deployment: **https://micasa-demo-1.onrender.com**
 | Role | Username | Password |
 |---|---|---|
 | Customer | `mona` / `khaled` | `password123` |
-| Worker | `ahmed` (funded) · `mahmoud` (postpaid) · `saeed` (pending) | `password123` |
+| Worker | `ahmed` (funded) · `mahmoud` (funded) · `saeed` (pending) | `password123` |
 | Admin (CIC / CENTCOM) | `youssef_hq` | *not published — see below* |
 
 > **Admin password** is generated per-deployment and is **never committed**. Locally it's in the
@@ -34,7 +34,16 @@ Always-on deployment: **https://micasa-demo-1.onrender.com**
 > service **Logs** on first boot).
 >
 > ⏳ **First open may take ~50s** — the free Render instance spins down when idle and cold-starts on
-> the next request. Data also resets on restart until the Postgres migration ([Roadmap](#roadmap)).
+> the next request. Data resets on restart **unless** a persistent `DATABASE_URL` is set — one env var
+> switches the whole stack to Supabase Postgres for permanent 24/7 data ([`docs/DEPLOY_SUPABASE.md`](docs/DEPLOY_SUPABASE.md)).
+
+### Optional environment variables
+
+| Variable | Effect |
+|---|---|
+| `ADMIN_PASSWORD` | Sets/syncs the `youssef_hq` admin password on boot. |
+| `ANTHROPIC_API_KEY` | Enables **Casa AI** in the CIC Brain console — plain-language questions are answered by Claude reasoning over the live platform snapshot. Without it, the console falls back to the built-in data-driven responder (no configuration required, always works). The key lives only in the server environment and is never sent to the client. Optional: `CASA_MODEL` overrides the model (default `claude-opus-4-8`). |
+| `DATABASE_URL` | Postgres/Supabase connection string for persistent 24/7 data — see [`docs/DEPLOY_SUPABASE.md`](docs/DEPLOY_SUPABASE.md). Defaults to a local SQLite file. |
 
 ---
 
@@ -120,7 +129,8 @@ back to `mona`, accept → `ahmed` marks done → `mona` confirms & rates → wa
 - [ ] Payment gateway (Vodafone Cash / InstaPay) — currently a manual admin-confirmed top-up
 - [ ] SMS / phone verification — currently username + password
 - [ ] Job photo upload & storage — schema + placeholder exist
-- [ ] Migrate DB from SQLite → Postgres/Supabase for always-on hosting
+- [x] Migrate DB from SQLite → Postgres/Supabase for always-on hosting — one-env-var switch, see [`docs/DEPLOY_SUPABASE.md`](docs/DEPLOY_SUPABASE.md)
+- [x] Casa AI — Claude-powered reasoning in the CIC Brain console (set `ANTHROPIC_API_KEY`)
 - [ ] Live production deployment
 
 ---
