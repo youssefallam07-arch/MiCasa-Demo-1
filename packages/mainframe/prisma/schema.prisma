@@ -162,3 +162,16 @@ model AdminConfig {
   key   String @id
   value String
 }
+
+/// Append-only audit trail — every account/data/job change, recorded while online.
+/// Read by CIC (data & info store) + the CENTCOM audit screen; exportable to Excel.
+model AuditEvent {
+  id      String   @id @default(cuid())
+  at      DateTime @default(now())
+  actor   String   @default("system") // who did it (username)
+  action  String   // e.g. account.created, job.completed, config.changed
+  target  String   @default("")        // affected entity (username / job id)
+  detail  String   @default("")        // human-readable summary
+
+  @@index([at])
+}

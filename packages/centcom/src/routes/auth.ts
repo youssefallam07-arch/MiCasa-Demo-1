@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { prisma } from '../core';
+import { prisma, logEvent } from '../core';
 import { signToken, requireRole } from '../auth';
 import { h, body } from '../helpers';
 
@@ -26,6 +26,7 @@ authRouter.post('/register', body(registerSchema), h(async (req, res) => {
     await prisma.workerProfile.create({ data: { userId: user.id, trade: trade || 'handyman', zone: zone || 'المعادي', verificationStatus: 'pending', walletMode: 'postpaid' } });
     await prisma.serviceCreditAccount.create({ data: { workerId: user.id } });
   }
+  logEvent(user.id, 'account.created', username, `self sign-up (${role})`);
   const token = signToken({ sub: user.id, role: user.role, name: user.name });
   res.json({ ok: true, token, user: { id: user.id, role: user.role, name: user.name } });
 }));

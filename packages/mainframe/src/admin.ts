@@ -5,6 +5,7 @@ import { getConfig, setConfig } from './config';
 import { confirmTopup } from './credit';
 import { releaseHold } from './marketplace';
 import { recordStaffCredential, removeStaffCredential } from './staff';
+import { listAuditEvents } from './audit';
 import { err } from './errors';
 
 // Make the admin login deterministic on hosted deploys: if ADMIN_PASSWORD is set,
@@ -194,6 +195,7 @@ export async function centcomOverview() {
     prisma.job.findMany({ where: { status: 'cancel_pending' } }),
     prisma.serviceCreditTxn.findMany({ where: { type: 'capture' }, select: { amountPst: true, createdAt: true } }),
   ]);
+  const events = await listAuditEvents(100);
   const approvedWorkers = workers.filter((w) => w.verificationStatus === 'approved').length;
   const suspended = workers.filter((w) => w.suspended).length;
   const heldPst = workers.reduce((t, w) => t + (w.heldPst || 0), 0);
@@ -235,7 +237,8 @@ export async function centcomOverview() {
   return {
     setup: true,
     summary: { customers: ov.customers, workers: ov.workers, approvedWorkers, pendingVetting: ov.pendingVetting, suspended, revenuePst: ov.commissionCapturedPst, heldPst, activeZones },
-    accounts, admins, audit: [],
+    accounts, admins,
+    audit: events.map((e) => ({ ts: e.at.toISOString(), user: e.actor, action: e.action, detail: (e.detail || '') + (e.target ? ' · ' + e.target : '') })),
     credit: { workers: workersMap, cfg: cc, revenue, pendingTopups, pendingReleases, guaranteeCostPst: 0 },
   };
 }

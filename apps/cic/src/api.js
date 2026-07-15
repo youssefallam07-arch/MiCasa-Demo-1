@@ -46,6 +46,21 @@ export async function api(path, method = 'GET', body) {
 export const egp = (pst) => (pst / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
 export const toPst = (e) => Math.round(Number(e) * 100);
 
+// Authenticated binary download (keeps the JWT in the header).
+export async function download(path, fallbackName = 'download') {
+  const headers = {};
+  if (token) headers.Authorization = 'Bearer ' + token;
+  const r = await fetch(BASE + path, { headers });
+  if (!r.ok) throw Object.assign(new Error('download_failed'), { status: r.status });
+  const blob = await r.blob();
+  const cd = r.headers.get('Content-Disposition') || '';
+  const name = (cd.match(/filename="([^"]+)"/) || [])[1] || fallbackName;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
+}
+
 // Thin banner so it's always obvious this tab is an admin impersonation.
 if (_imp && _imp.user) {
   const bar = document.createElement('div');

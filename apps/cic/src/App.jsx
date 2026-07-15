@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api, egp, getUser, setSession, clearSession } from './api.js';
+import { api, egp, download, getUser, setSession, clearSession } from './api.js';
 
 export default function App() {
   const [user, setUser] = useState(getUser());
@@ -35,11 +35,11 @@ function Shell({ user, onOut }) {
     const ae = document.activeElement;
     if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return;
     try {
-      const [dash, wallets, topups, releases, jobs, workers, config] = await Promise.all([
+      const [dash, wallets, topups, releases, jobs, workers, config, audit] = await Promise.all([
         api('/admin/dashboard'), api('/admin/wallets'), api('/admin/topups'), api('/admin/releases'),
-        api('/admin/jobs'), api('/admin/workers'), api('/admin/config'),
+        api('/admin/jobs'), api('/admin/workers'), api('/admin/config'), api('/admin/audit'),
       ]);
-      setData({ dash, wallets, topups: topups.topups, releases: releases.releases, jobs: jobs.jobs, workers: workers.workers, config: config.config });
+      setData({ dash, wallets, topups: topups.topups, releases: releases.releases, jobs: jobs.jobs, workers: workers.workers, config: config.config, audit: audit.events });
     } catch (e) { if (e.status === 401) onOut(); }
   }
   useEffect(() => { load(); const t = setInterval(load, 5000); return () => clearInterval(t); }, []);
@@ -52,6 +52,7 @@ function Shell({ user, onOut }) {
     ['topups', 'Top-ups', d.pendingTopups],
     ['releases', 'Releases', d.pendingReleases],
     ['config', 'Config', 0],
+    ['audit', 'Data Log', 0],
     ['password', 'Password', 0],
   ];
   return (
@@ -71,6 +72,7 @@ function Shell({ user, onOut }) {
         {page === 'topups' && <Topups topups={data.topups || []} reload={load} />}
         {page === 'releases' && <Releases releases={data.releases || []} reload={load} />}
         {page === 'config' && <Config config={data.config || {}} reload={load} />}
+        {page === 'audit' && <AuditLog events={data.audit || []} />}
         {page === 'password' && <Password />}
       </main>
     </div>
@@ -164,6 +166,40 @@ function Verification({ workers, reload }) {
 
 function Jobs({ jobs, reload }) {
   return <><h2 className="title">Jobs</h2><div className="sub">All jobs across the platform. Use overrides to force a stuck job to a terminal state (a reason is logged to the ledger).</div><div className="card"><JobsTable jobs={jobs} reload={reload} /></div></>;
+}
+
+const AUDIT_PILL = { 'account.created': 'blue', 'account.deleted': 'bad', 'account.password_set': 'warn', 'worker.verification': 'blue', 'worker.suspended': 'bad', 'job.posted': 'blue', 'bid.placed': 'off', 'job.accepted': 'warn', 'job.worker_done': 'gold', 'job.completed': 'on', 'job.cancelled': 'bad', 'job.cancel_requested': 'bad', 'job.rated': 'gold', 'config.changed': 'gold', 'wallet.topup_confirmed': 'on' };
+function AuditLog({ events }) {
+  const [dl, setDl] = useState(false);
+  async function excel() {
+    setDl(true);
+    try { await download('/admin/registry.xlsx', 'micasa-data-log.xlsx'); }
+    catch { alert('Export failed.'); }
+    finally { setDl(false); }
+  }
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h2 className="title">Data Log</h2>
+          <div className="sub">Every change recorded while online — accounts, jobs, bids, wallets, config. {events.length} events · newest first. Downloads as the full Excel (Audit Log sheet).</div>
+        </div>
+        <button className="act" onClick={excel} disabled={dl}>{dl ? 'Building…' : '⬇ Excel'}</button>
+      </div>
+      <div className="card"><div className="tblwrap"><table>
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+        <tbody>{events.length ? events.map((e, i) => (
+          <tr key={e.id || i}>
+            <td className="mini" style={{ whiteSpace: 'nowrap', color: 'var(--muted)' }}>{new Date(e.at).toLocaleString()}</td>
+            <td><b>{e.actor}</b></td>
+            <td><span className={'pill ' + (AUDIT_PILL[e.action] || 'off')}>{e.action}</span></td>
+            <td style={{ fontSize: 12 }}>{e.target || '—'}</td>
+            <td style={{ fontSize: 12, color: 'var(--muted)' }}>{e.detail || ''}</td>
+          </tr>
+        )) : <tr><td colSpan="5" className="empty">No events recorded yet.</td></tr>}</tbody>
+      </table></div></div>
+    </>
+  );
 }
 
 function Wallets({ wallets }) {

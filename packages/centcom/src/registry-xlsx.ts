@@ -6,7 +6,7 @@
 // admin/staff passwords the OWNER set — read from the gitignored staff-credentials
 // file (never the DB, never git, admin accounts only). Regular users are never shown.
 import ExcelJS from 'exceljs';
-import { prisma, admin, getStaffCredentials } from './core';
+import { prisma, admin, getStaffCredentials, listAuditEvents } from './core';
 
 const FONT = 'Arial';
 const pst = (v: number | null | undefined) => (v == null ? null : v / 100); // piasters -> EGP number
@@ -165,6 +165,17 @@ export async function buildRegistryWorkbook(): Promise<ExcelJS.Workbook> {
   d.getCell(`A${note.number}`).font = { name: FONT, italic: true, size: 9, color: { argb: 'FF7E92B4' } };
   d.getCell(`A${note.number}`).alignment = { wrapText: true };
   d.getRow(note.number).height = 40;
+
+  // ---- Audit Log (every recorded change while online) ----
+  const events = await listAuditEvents(5000);
+  addTable(
+    wb.addWorksheet('Audit Log', { properties: { tabColor: { argb: 'FF3DD68C' } } }),
+    [
+      { header: 'When', key: 'at', fmt: 'yyyy-mm-dd hh:mm:ss' }, { header: 'Actor', key: 'actor' },
+      { header: 'Action', key: 'action' }, { header: 'Target', key: 'target' }, { header: 'Detail', key: 'detail' },
+    ],
+    events.map((e) => ({ at: new Date(e.at), actor: e.actor, action: e.action, target: e.target, detail: e.detail })),
+  );
 
   return wb;
 }

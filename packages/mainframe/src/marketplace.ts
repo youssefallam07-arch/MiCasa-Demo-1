@@ -1,19 +1,22 @@
 import { prisma } from './db';
 import { getConfig } from './config';
 import { err } from './errors';
+import { logEvent } from './audit';
 import { computeCommissionPst, checkCoverage } from './credit';
 
 // ---- Jobs ----
 export async function postJob(customerId: string, d: {
   trade: string; description: string; zone: string; budgetOfferPst: number; urgency: string; photos?: string[];
 }) {
-  return prisma.job.create({
+  const job = await prisma.job.create({
     data: {
       customerId, trade: d.trade, description: d.description, zone: d.zone,
       budgetOfferPst: d.budgetOfferPst, urgency: d.urgency === 'priority' ? 'priority' : 'standard',
       photos: JSON.stringify(d.photos || []),
     },
   });
+  logEvent(customerId, 'job.posted', job.id, `${d.trade} · ${d.zone} · EGP ${Math.round(d.budgetOfferPst / 100)}`);
+  return job;
 }
 
 export async function myJobsCustomer(customerId: string) {
@@ -71,6 +74,7 @@ export async function submitBid(workerId: string, jobId: string, pricePst: numbe
     create: { jobId, workerId, pricePst, etaMin, status: 'active' },
     update: { pricePst, etaMin, status: 'active' },
   });
+  logEvent(workerId, 'bid.placed', jobId, `EGP ${Math.round(pricePst / 100)} · ${etaMin}min`);
   return { ok: true, bidId: bid.id, commissionPst };
 }
 
@@ -137,6 +141,7 @@ export async function acceptBid(customerId: string, jobId: string, bidId: string
     if (claimed.count === 0) throw err('job_not_open', 409);
     await tx.bid.update({ where: { id: bidId }, data: { status: 'accepted' } });
     await tx.bid.updateMany({ where: { jobId, id: { not: bidId } }, data: { status: 'rejected' } });
+    logEvent(customerId, 'job.accepted', jobId, `worker bid EGP ${Math.round(bid.pricePst / 100)} · commission held EGP ${Math.round(commission / 100)}`);
     return { ok: true, commissionPst: commission, bucket };
   });
 }
@@ -148,6 +153,7 @@ export async function markComplete(workerId: string, jobId: string) {
   if (job.acceptedWorkerId !== workerId) throw err('not_your_job', 403);
   if (job.status !== 'accepted') throw err('not_in_progress', 409);
   await prisma.job.update({ where: { id: jobId }, data: { status: 'worker_done' } });
+  logEvent(workerId, 'job.worker_done', jobId, 'worker marked the job done');
   return { ok: true };
 }
 
@@ -198,6 +204,7 @@ export async function confirmComplete(customerId: string, jobId: string) {
     if (job.customerId !== customerId) throw err('not_your_job', 403);
     if (!['worker_done', 'accepted'].includes(job.status)) throw err('not_completable', 409);
     await finalizeCompletion(tx, job, cfg, 'commission captured on completion');
+    logEvent(customerId, 'job.completed', jobId, `confirmed by customer · commission EGP ${Math.round(job.commissionPst / 100)} captured`);
     return { ok: true };
   });
 }
@@ -213,6 +220,7 @@ export async function cancelOpenJob(customerId: string, jobId: string) {
     prisma.bid.updateMany({ where: { jobId, status: 'active' }, data: { status: 'withdrawn' } }),
     prisma.cancellation.create({ data: { jobId, by: 'customer', byUserId: customerId, note: 'open job cancelled by customer' } }),
   ]);
+  logEvent(customerId, 'job.cancelled', jobId, 'open job cancelled by customer (no money moved)');
   return { ok: true, status: 'cancelled' };
 }
 
@@ -226,6 +234,7 @@ export async function cancelByCustomer(customerId: string, jobId: string, contac
     prisma.job.update({ where: { id: jobId }, data: { status: 'cancel_pending', cancelledBy: 'customer', contactedBeforeCancel: contacted } }),
     prisma.cancellation.create({ data: { jobId, by: 'customer', byUserId: customerId, contacted, note: 'accepted job cancelled by customer' } }),
   ]);
+  logEvent(customerId, 'job.cancel_requested', jobId, 'customer requested cancellation of an accepted job');
   return { ok: true, status: 'cancel_pending' };
 }
 
@@ -253,6 +262,7 @@ export async function cancelByWorker(workerId: string, jobId: string, contacted:
       flagged = true;
     }
   }
+  logEvent(workerId, 'job.cancel_requested', jobId, `worker cancelled${flagged ? ' · STRIKE applied' : ''}${suspended ? ' · SUSPENDED' : ''}`);
   return { ok: true, status: 'cancel_pending', flagged, suspended };
 }
 
@@ -264,6 +274,7 @@ export async function releaseHold(jobId: string, by: string) {
     if (job.status !== 'cancel_pending') throw err('not_pending_release', 409);
     await releaseCommission(tx, job, `cancellation confirmed by ${by}`);
     await tx.job.update({ where: { id: jobId }, data: { status: 'cancelled' } });
+    logEvent(null, 'job.cancelled', jobId, `commission hold released · confirmed by ${by}`);
     return { ok: true };
   });
 }
@@ -276,6 +287,7 @@ export async function forceComplete(jobId: string, note: string) {
     if (!job) throw err('job_not_found', 404);
     if (!['accepted', 'worker_done', 'cancel_pending'].includes(job.status)) throw err('not_overridable', 409);
     await finalizeCompletion(tx, job, cfg, `admin override: ${note}`);
+    logEvent(null, 'job.force_completed', jobId, `admin override: ${note}`);
     return { ok: true, status: 'completed' };
   });
 }
@@ -288,6 +300,7 @@ export async function forceCancel(jobId: string, note: string) {
     await releaseCommission(tx, job, `admin override: ${note}`);
     await tx.job.update({ where: { id: jobId }, data: { status: 'cancelled', cancelledBy: 'admin' } });
     await tx.cancellation.create({ data: { jobId, by: 'admin', note: `admin override: ${note}` } });
+    logEvent(null, 'job.force_cancelled', jobId, `admin override: ${note}`);
     return { ok: true, status: 'cancelled' };
   });
 }
@@ -306,6 +319,7 @@ export async function autoCaptureStale() {
         if (!fresh || fresh.status !== 'worker_done') return; // race guard
         await finalizeCompletion(tx, fresh, cfg, `auto-captured after ${hours}h (customer never confirmed)`);
       });
+      logEvent(null, 'job.auto_captured', job.id, `auto-captured after ${hours}h — customer never confirmed`);
       captured++;
     } catch { /* skip an individual failure, keep going */ }
   }
@@ -331,6 +345,7 @@ export async function rate(raterId: string, jobId: string, rateeId: string, star
     throw e;
   }
   await recomputeRatingFor(rateeId);
+  logEvent(raterId, 'job.rated', jobId, `${stars}★${comment ? ' · ' + comment : ''}`);
   return { ok: true };
 }
 
