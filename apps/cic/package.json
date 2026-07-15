@@ -9,6 +9,9 @@
     "preview": "vite preview --port 5175"
   },
   "dependencies": {
+    "@fontsource/ibm-plex-sans-arabic": "^5.2.9",
+    "@fontsource/tajawal": "^5.2.7",
+    "lucide-react": "^1.24.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"

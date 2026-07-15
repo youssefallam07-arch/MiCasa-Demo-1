@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { Brain as LucideBrain, Download as LucideDownload, Star as LucideStar } from 'lucide-react';
 import { api, egp, download, getUser, setSession, clearSession } from './api.js';
+
+// Lucide defaults for the whole app: 1.5px stroke, monochrome via currentColor.
+// (Aliased — a page component named `Brain` already exists below.)
+const IconBrain = (p) => <LucideBrain size={18} strokeWidth={1.5} {...p} />;
+const IconDownload = (p) => <LucideDownload size={15} strokeWidth={1.5} {...p} />;
+const IconStar = (p) => <LucideStar size={13} strokeWidth={1.5} {...p} />;
 
 export default function App() {
   const [user, setUser] = useState(getUser());
@@ -202,7 +209,7 @@ function Brain({ brain, reload, setPage }) {
     <>
       <div className="brain-top">
         <div>
-          <h2 className="title">🧠 The Brain</h2>
+          <h2 className="title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><IconBrain size={22} />The Brain</h2>
           <div className="sub">Live intelligence · sense → diagnose → predict → act · refreshes every 5s</div>
         </div>
         <div className="focus-tabs">
@@ -427,7 +434,7 @@ function AuditLog({ events }) {
           <h2 className="title">Data Log</h2>
           <div className="sub">Every change recorded while online — accounts, jobs, bids, wallets, config. {events.length} events · newest first. Downloads as the full Excel (Audit Log sheet).</div>
         </div>
-        <button className="act" onClick={excel} disabled={dl}>{dl ? 'Building…' : '⬇ Excel'}</button>
+        <button className="act" onClick={excel} disabled={dl} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{dl ? 'Building…' : <><IconDownload />Excel</>}</button>
       </div>
       <div className="card"><div className="tblwrap"><table>
         <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
@@ -469,7 +476,7 @@ function Wallets({ wallets }) {
               <td className="money" style={{ color: 'var(--gold)' }}>EGP {egp(w.heldPst)}</td>
               <td className="money" style={{ color: 'var(--red)' }}>{w.debtPst ? 'EGP ' + egp(w.debtPst) : '—'}</td>
               <td>{w.jobsCompleted}</td>
-              <td>{w.ratingCount ? '★ ' + w.ratingAvg.toFixed(1) : '—'}</td>
+              <td>{w.ratingCount ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconStar style={{ fill: 'currentColor' }} />{w.ratingAvg.toFixed(1)}</span> : '—'}</td>
               <td>{w.strikes}</td>
             </tr>
           ))}</tbody>

@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -41,13 +41,16 @@
   --muted:#7E92B4;
   --dim:#465A80;
   --nav-h:72px;
-  --font-d:'Space Grotesk',sans-serif;
+  /* MiCasa Pro type (DS1) — one family for body + display. Light-theme color
+     token migration lands in DS3; the dark palette above stays until then. */
+  --font:'IBM Plex Sans Arabic','Tajawal',system-ui,sans-serif;
+  --font-d:var(--font);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
   background:#02040A;
-  font-family:'Manrope','Segoe UI',system-ui,sans-serif;
+  font-family:var(--font);
   color:var(--text);
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;
@@ -2114,7 +2117,7 @@ function shopVendorCard(s){
 function openProd(id){
   const p=PRODUCTS.find(x=>x.id===id);if(!p)return;
   const s=shopOf(p.sh);
-  const rows=(p.sp||[]).concat([['Brand',p.br],['Rating','★ '+p.rt],['In stock',p.stk+' units'],['Warranty',p.war],['Returns',p.ret]].filter(x=>x[1]&&x[1]!=='—'&&!String(x[1]).includes('undefined')));
+  const rows=(p.sp||[]).concat([['Brand',p.br],['Rating',ic('star','sm fill')+' '+p.rt],['In stock',p.stk+' units'],['Warranty',p.war],['Returns',p.ret]].filter(x=>x[1]&&x[1]!=='—'&&!String(x[1]).includes('undefined')));
   const specRow=(pair)=>`<div class="spec"><span>${pair[0]}</span><b>${pair[1]}</b></div>`;
   $('prodSheetH').textContent=p.nm;
   $('prodBody').innerHTML=`
@@ -2816,7 +2819,7 @@ function openWorkerSheet(id){
       <div class="st"><b>${resp}m</b><span>Response</span></div></div>
     <div class="wk-tags" style="padding:0 22px 12px">${w.tags.map(x=>`<span>${x}</span>`).join('')}<span>${repeat}% repeat clients</span></div>
     <div class="wp-bio">${w.nm.split(' ')[0]} has completed ${w.jobs} verified ${svcName(S.svc).toLowerCase()} jobs on MiCasa with a ${w.rate} average across the last 12 months. Background-checked, insured, and equipped with professional tools.</div>
-    ${revs.map(v=>`<div class="rev"><div class="rv-top"><span>${v.nm}</span><span class="stars">${'★'.repeat(v.st)}${'☆'.repeat(5-v.st)}</span></div><p>${v.tx}</p></div>`).join('')}
+    ${revs.map(v=>`<div class="rev"><div class="rv-top"><span>${v.nm}</span><span class="stars">${Array.from({length:v.st}).map(()=>ic('star','sm fill')).join('')}${Array.from({length:5-v.st}).map(()=>ic('star','sm')).join('')}</span></div><p>${v.tx}</p></div>`).join('')}
     <button class="cta sheet-cta" onclick="closeSheets();pickWorker('${w.id}')">Select — from EGP ${estFor(w)}</button>
     <div style="height:12px"></div>`;
   showSheet('workerSheet');
@@ -2880,7 +2883,7 @@ function submitRating(){
   if(S.activeJob&&S.activeJob.jobId){
     vpApi('/customer/jobs/'+S.activeJob.jobId+'/rate','POST',{stars:rateState.stars,comment:(rateState.tags||[]).join(', ')}).catch(()=>{});
   }
-  if(S.activity[0]){S.activity[0].sub+=' · ★'+rateState.stars;if(typeof persistUser==='function')persistUser()}
+  if(S.activity[0]){S.activity[0].sub+=' · '+ic('star','sm fill')+rateState.stars;if(typeof persistUser==='function')persistUser()}
   S.points+=5;$('pointsVal').textContent=S.points+' pts';
   closeSheets();toast('star','Thank you — review posted (+5 pts)');
 }
