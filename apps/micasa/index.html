@@ -1809,34 +1809,72 @@ function toggleUrgent(){
 }
 
 /* ---------- live offers ---------- */
+/* ===== REAL booking — posts a real job, polls real bids, real accept/track ===== */
+const ZONE_AR={Maadi:'المعادي','Nasr City':'مدينة نصر',Zamalek:'الزمالك',Heliopolis:'مصر الجديدة','New Cairo':'القاهرة الجديدة',Dokki:'الدقي',Mohandessin:'المهندسين','6th of October':'٦ أكتوبر','Sheikh Zayed':'الشيخ زايد','Garden City':'جاردن سيتي',Shubra:'شبرا',Rehab:'الرحاب'};
+function custZoneAr(){return ZONE_AR[custZone()]||'المعادي';}
 function sendBid(){
-  if(S.schedHour!=null){
-    const hh=String(S.schedHour).padStart(2,'0')+':00';
-    const isToday=S.schedHour>new Date().getHours();
-    S.activity.unshift({icn:'calendar',ttl:svcName(S.svc)+' — '+S.worker.nm,sub:'EGP '+S.bid+' · scheduled '+(isToday?'today':'tomorrow')+' '+hh+' · '+payLabel(),live:true});
-    persistUser();renderActivity();
-    pushNotif('calendar','Booking scheduled',svcName(S.svc)+' locked for '+(isToday?'today':'tomorrow')+' at '+hh+' — EGP '+S.bid+' at the off-peak rate.');
-    successFlash();toast('calendar','Scheduled for '+hh+' — specialist confirmed at your price');
+  if(S.schedHour!=null){ // keep the "schedule for later" path as a light confirmation
+    const hh=String(S.schedHour).padStart(2,'0')+':00';const isToday=S.schedHour>new Date().getHours();
     S.schedHour=null;
-    nav('scr-activity');
-    return;
   }
+  postRealJob();
+}
+let offerPollT=null,jobPollT=null;
+function stopOfferPoll(){clearInterval(offerPollT);offerPollT=null}
+function stopJobPoll(){clearInterval(jobPollT);jobPollT=null}
+async function postRealJob(){
   nav('scr-offers');
-  // register the posted job: atomic-network zone gate + ops watchtower (founder-led matching)
-  S.jobId='MC'+Date.now().toString(36);
-  creditApi('jobs-post','POST',{job:S.jobId,svc:S.svc.id,zone:custZone(),bidEgp:S.bid,priority:!!S.urgent});
-  $('offersSub').textContent=S.svc.nm+' · your offer EGP '+S.bid;
-  $('bcastAmt').textContent='EGP '+S.bid;
-  $('bcastCnt').textContent=S.workers.filter(w=>!w.busy).length;
-  $('offersWrap').innerHTML='';$('raiseStrip').style.display='none';
-  clearOfferTimers();
-  toast('radio','Offer broadcast — specialists are reviewing');
-  const cands=[...S.workers].sort(()=>Math.random()-.5).slice(0,4);
-  cands.forEach((w,i)=>{
-    w.thresh=Math.round(estFor(w)*(0.86+Math.random()*0.12));
-    S.offerTimers.push(setTimeout(()=>incomingOffer(w),1800+i*2600+Math.random()*1500));
-  });
-  S.offerTimers.push(setTimeout(()=>{$('raiseStrip').style.display='flex'},7000));
+  $('offersSub').textContent=svcName(S.svc)+' · your offer EGP '+S.bid;
+  $('bcastAmt').textContent='EGP '+S.bid;$('bcastCnt').textContent='0';
+  $('offersWrap').innerHTML='<div style="text-align:center;color:var(--muted);padding:26px;font-size:13px">Broadcasting to specialists in '+custZoneAr()+'…</div>';
+  $('raiseStrip').style.display='none';clearOfferTimers();stopOfferPoll();
+  try{
+    const r=await vpApi('/customer/jobs','POST',{trade:S.svc.id,description:svcName(S.svc)+' — '+custZoneAr(),zone:custZoneAr(),budgetOfferPst:Math.round(S.bid*100),urgency:S.urgent?'priority':'standard'});
+    S.jobId=r.job.id;
+    toast('radio','Offer broadcast — specialists are reviewing');
+    startOfferPoll();
+  }catch(e){toast('alert','Could not post the job',true);nav('scr-bid',true)}
+}
+function startOfferPoll(){
+  stopOfferPoll();const seen={};let cleared=false;
+  const poll=async()=>{
+    if(S.screen!=='scr-offers'||!S.jobId){return}
+    try{
+      const r=await vpApi('/customer/jobs/'+S.jobId+'/bids');const bids=r.bids||[];
+      $('bcastCnt').textContent=bids.length;
+      if(bids.length&&!cleared){$('offersWrap').innerHTML='';cleared=true}
+      bids.forEach(b=>{if(!seen[b.id]){seen[b.id]=true;renderRealOffer(b)}});
+    }catch(e){}
+  };
+  poll();offerPollT=setInterval(poll,3000);
+}
+function renderRealOffer(b){
+  if(S.screen!=='scr-offers')return;
+  const id='of'+b.id;if($(id))return;
+  const priceEgp=Math.round(b.pricePst/100),accepts=priceEgp<=S.bid;
+  const rating=b.ratingAvg?Number(b.ratingAvg).toFixed(1):'new',init=(b.name||'?').trim()[0]||'?';
+  const el=document.createElement('div');el.className='offer-card';el.id=id;
+  el.innerHTML=`<div class="o-top">
+      <div class="avatar" style="background:${AV_COLORS[0]};width:46px;height:46px"><span>${init}</span></div>
+      <div class="wk-mid"><div class="nm">${esc(b.name)} <span class="vr">${ic('shield','sm')}</span></div>
+        <div class="meta"><span class="rt">${ic('star','sm fill')} ${rating}</span><span>~${b.etaMin} min · ${b.jobsCompleted||0} jobs</span></div></div>
+      <div class="o-price ${accepts?'':'counter'}"><b>EGP ${priceEgp}</b><span>${accepts?'ACCEPTS YOUR OFFER':'COUNTER-OFFER'}</span></div></div>
+    <div class="o-actions"><button class="o-decline" onclick="declineOffer('${id}')">Dismiss</button>
+      <button class="o-accept" onclick="acceptRealOffer('${b.id}',${JSON.stringify(esc(b.name))},${priceEgp},${b.etaMin},'${b.workerId}',${b.ratingAvg||0})">Accept — EGP ${priceEgp}</button></div>`;
+  $('offersWrap').prepend(el);
+  toast(accepts?'check':'message',(b.name||'').split(' ')[0]+' '+(accepts?'accepted your price':'made an offer'),!accepts);
+}
+async function acceptRealOffer(bidId,name,priceEgp,eta,workerId,ratingAvg){
+  try{
+    await vpApi('/customer/jobs/'+S.jobId+'/accept','POST',{bidId});
+    stopOfferPoll();clearOfferTimers();
+    const w={id:workerId,nm:name,rate:ratingAvg?Number(ratingAvg).toFixed(1):'new',eta,verified:true,col:AV_COLORS[0],photo:'',busy:false,dist:'~'};
+    S.activeJob={w,svc:S.svc,price:priceEgp,stage:3,jobId:S.jobId};
+    S.activity.unshift({icn:S.svc.ic,ttl:svcName(S.svc)+' — '+name,sub:'EGP '+priceEgp+' · confirmed',live:true});
+    if(typeof persistUser==='function')persistUser();
+    renderActivity();successFlash();toast('check','Booked — '+(name||'').split(' ')[0]+' is assigned');
+    startTracking();
+  }catch(e){toast('alert',(e.data&&e.data.error==='job_not_open')?'Already taken — pick another':'Could not accept',true)}
 }
 /* ---- service credit (prepaid commission credit) bridge ---- */
 async function creditApi(path,method,body){
@@ -1902,7 +1940,7 @@ function raiseBid(d){
   S.offerTimers.push(setTimeout(()=>incomingOffer(w),1600+Math.random()*1800));
 }
 function clearOfferTimers(){S.offerTimers.forEach(t=>clearTimeout(t));S.offerTimers=[]}
-function cancelBidding(){clearOfferTimers();nav('scr-bid',true)}
+function cancelBidding(){clearOfferTimers();stopOfferPoll();nav('scr-bid',true)}
 async function acceptOffer(wid,price){
   if(S.pay==='wallet'&&!walletSpend(price,'Job — '+svcName(S.svc)))return;
   const w=S.workers.find(x=>x.id===wid);
@@ -1941,49 +1979,51 @@ const STAGES=[
 function startTracking(){
   nav('scr-track');
   const {w,svc,price}=S.activeJob;
-  $('trackSub').textContent=svc.nm+' · EGP '+price;
+  $('trackSub').textContent=svcName(svc)+' · EGP '+price;
   $('trackWorkerCard').innerHTML=`
     <div class="wk-card" style="margin-top:0">
       ${avatarHTML(w)}
       <div class="wk-mid">
-        <div class="nm">${w.nm} ${w.verified?`<span class="vr">${ic('shield','sm')}</span>`:''}</div>
-        <div class="meta"><span class="rt">${ic('star','sm fill')} ${w.rate}</span><span id="etaLive">ETA ~${w.eta} min</span></div>
+        <div class="nm">${esc(w.nm)} <span class="vr">${ic('shield','sm')}</span></div>
+        <div class="meta"><span class="rt">${ic('star','sm fill')} ${w.rate}</span><span id="etaLive">Assigned · working</span></div>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="back-btn" onclick="toast('phone','Calling ${w.nm.split(' ')[0]}…')">${ic('phone','sm')}</button>
-        <button class="back-btn" onclick="openChat()">${ic('message','sm')}</button>
-      </div></div>`;
-  S.activeJob.stage=1;renderTimeline();
-  // real-map route
-  if(HAS_MAPS&&S.loc){
-    const from=wkPos(w),to=[S.loc.lat,S.loc.lng];
-    const corner=[from[0],to[1]]; // L-shaped street route
-    const pts=[];
-    const seg=(a,b,n)=>{for(let i=0;i<n;i++)pts.push([a[0]+(b[0]-a[0])*i/n,a[1]+(b[1]-a[1])*i/n])};
-    seg(from,corner,26);seg(corner,to,26);pts.push(to);
-    if(trackMap){trackMap.remove();trackMap=null}
-    trackMap=L.map('trackMap',{zoomControl:false,scrollWheelZoom:false});
-    L.tileLayer(DARK_TILES,{maxZoom:19,attribution:TILE_ATTR}).addTo(trackMap);
-    trackMap.fitBounds(L.latLngBounds([from,to]).pad(0.25));
-    L.polyline([from,corner,to],{color:'#4D9FFF',weight:3,opacity:.5,dashArray:'6 8'}).addTo(trackMap);
-    L.marker(to,{icon:L.divIcon({className:'',html:`<div class="home-marker"><svg class="ic lg"><use href="#i-home"/></svg></div>`,iconSize:[30,30],iconAnchor:[15,26]})}).addTo(trackMap);
-    const mv=L.marker(from,{icon:L.divIcon({className:'',html:`<div class="van-marker">${ic(svc.ic,'sm')}</div>`,iconSize:[44,44],iconAnchor:[22,22]}),zIndexOffset:900}).addTo(trackMap);
-    setTimeout(()=>trackMap.invalidateSize(),100);
-    let step=0;
-    clearInterval(S.trackTimer);
-    S.trackTimer=setInterval(()=>{
-      step++;
-      if(step<pts.length){
-        mv.setLatLng(pts[step]);
-        const rem=Math.max(1,Math.round(w.eta*(1-step/pts.length)));
-        const e=$('etaLive');if(e)e.textContent='ETA ~'+rem+' min';
-        $('etaBadge').textContent='Arriving in ~'+rem+' min';
-      }else advanceStage();
-    },420);
-  }else{
-    clearInterval(S.trackTimer);
-    S.trackTimer=setInterval(advanceStage,5000);
-  }
+        <button class="back-btn" onclick="toast('phone','Calling ${(''+w.nm).split(' ')[0]}…')">${ic('phone','sm')}</button>
+      </div></div>
+    <div id="trackAction" style="margin-top:14px"></div>`;
+  S.activeJob.stage=3;renderTimeline();
+  if($('etaBadge'))$('etaBadge').textContent='Specialist is on the job';
+  startJobPoll();
+}
+function startJobPoll(){
+  stopJobPoll();
+  const poll=async()=>{
+    if(!S.activeJob||!S.activeJob.jobId){stopJobPoll();return}
+    try{
+      const r=await vpApi('/customer/jobs');const job=(r.jobs||[]).find(j=>j.id===S.activeJob.jobId);
+      if(!job)return;
+      if(job.status==='worker_done'){
+        const ta=$('trackAction');
+        if(ta&&!document.getElementById('confirmDoneBtn')){
+          $('etaLive')&&($('etaLive').textContent='Specialist marked the job done');
+          ta.innerHTML='<div class="mini" style="text-align:center;color:var(--gold);margin-bottom:8px">The specialist marked the job done. Confirm to finish & release the commission.</div><button id="confirmDoneBtn" class="cta" style="width:100%">✓ Confirm the job is done</button>';
+          document.getElementById('confirmDoneBtn').onclick=confirmDone;
+        }
+      }else if(job.status==='completed'){S.activeJob.stage=4;renderTimeline();stopJobPoll()}
+      else if(job.status==='cancelled'||job.status==='cancel_pending'){toast('alert','This job was cancelled',true);stopJobPoll()}
+    }catch(e){}
+  };
+  poll();jobPollT=setInterval(poll,4000);
+}
+async function confirmDone(){
+  try{
+    await vpApi('/customer/jobs/'+S.activeJob.jobId+'/confirm-complete','POST');
+    stopJobPoll();S.activeJob.stage=4;renderTimeline();successFlash();
+    if(S.activity[0]){S.activity[0].live=false;S.activity[0].sub='EGP '+S.activeJob.price+' · completed';renderActivity();if(typeof persistUser==='function')persistUser()}
+    const ta=$('trackAction');if(ta)ta.innerHTML='';
+    toast('check','Job complete — rate your specialist');
+    setTimeout(openRateSheet,900);
+  }catch(e){toast('alert','Could not confirm',true)}
 }
 function advanceStage(){
   if(!S.activeJob)return;
@@ -2836,11 +2876,12 @@ function renderRate(){
 function toggleRTag(x){const i=rateState.tags.indexOf(x);i<0?rateState.tags.push(x):rateState.tags.splice(i,1);renderRate()}
 function submitRating(){
   if(!rateState.stars){toast('star','Tap a star first',true);return}
-  if(rateState.tip&&!walletSpend(rateState.tip,'Tip — '+S.activeJob.w.nm))return;
-  // reputation feeds the platform: low ratings reduce bid visibility, then suspend
-  if(S.activeJob&&S.activeJob.w)creditApi('rate','POST',{id:S.activeJob.w.id,stars:rateState.stars});
-  if(S.activity[0]){S.activity[0].sub+=' · ★'+rateState.stars;persistUser()}
-  S.points+=5;$('pointsVal').textContent=S.points+' pts';persistUser();
+  // real rating — feeds the worker's reputation on the platform
+  if(S.activeJob&&S.activeJob.jobId){
+    vpApi('/customer/jobs/'+S.activeJob.jobId+'/rate','POST',{stars:rateState.stars,comment:(rateState.tags||[]).join(', ')}).catch(()=>{});
+  }
+  if(S.activity[0]){S.activity[0].sub+=' · ★'+rateState.stars;if(typeof persistUser==='function')persistUser()}
+  S.points+=5;$('pointsVal').textContent=S.points+' pts';
   closeSheets();toast('star','Thank you — review posted (+5 pts)');
 }
 /* ---------- wallet ---------- */
