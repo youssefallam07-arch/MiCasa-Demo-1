@@ -290,3 +290,7 @@ export async function deleteAccount(userId: string) {
 }
 
 export { getConfig, setConfig, confirmTopup, releaseHold };
+// CIC "Brain" intelligence snapshot — surfaced on the admin namespace as admin.computeBrain().
+// (brain.ts imports the batched helpers above; the cycle is safe — they're hoisted fn decls
+// only called at request time.)
+export { computeBrain } from './brain';

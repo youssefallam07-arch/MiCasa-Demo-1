@@ -29,22 +29,23 @@ function Login({ onIn }) {
 }
 
 function Shell({ user, onOut }) {
-  const [page, setPage] = useState('dashboard');
+  const [page, setPage] = useState('brain');
   const [data, setData] = useState({});
   async function load() {
     const ae = document.activeElement;
     if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return;
     try {
-      const [dash, wallets, topups, releases, jobs, workers, config, audit] = await Promise.all([
-        api('/admin/dashboard'), api('/admin/wallets'), api('/admin/topups'), api('/admin/releases'),
+      const [brain, dash, wallets, topups, releases, jobs, workers, config, audit] = await Promise.all([
+        api('/admin/brain'), api('/admin/dashboard'), api('/admin/wallets'), api('/admin/topups'), api('/admin/releases'),
         api('/admin/jobs'), api('/admin/workers'), api('/admin/config'), api('/admin/audit'),
       ]);
-      setData({ dash, wallets, topups: topups.topups, releases: releases.releases, jobs: jobs.jobs, workers: workers.workers, config: config.config, audit: audit.events });
+      setData({ brain, dash, wallets, topups: topups.topups, releases: releases.releases, jobs: jobs.jobs, workers: workers.workers, config: config.config, audit: audit.events });
     } catch (e) { if (e.status === 401) onOut(); }
   }
   useEffect(() => { load(); const t = setInterval(load, 5000); return () => clearInterval(t); }, []);
   const d = data.dash || {};
   const NAV = [
+    ['brain', 'The Brain', 0],
     ['dashboard', 'Dashboard', 0],
     ['verification', 'Verification', d.verificationQueue],
     ['jobs', 'Jobs', 0],
@@ -65,6 +66,7 @@ function Shell({ user, onOut }) {
         <button className="out" onClick={onOut}>Sign out</button>
       </aside>
       <main className="main">
+        {page === 'brain' && <Brain brain={data.brain} reload={load} setPage={setPage} />}
         {page === 'dashboard' && <Dashboard d={d} jobs={data.jobs || []} />}
         {page === 'verification' && <Verification workers={data.workers || []} reload={load} />}
         {page === 'jobs' && <Jobs jobs={data.jobs || []} reload={load} />}
@@ -76,6 +78,231 @@ function Shell({ user, onOut }) {
         {page === 'password' && <Password />}
       </main>
     </div>
+  );
+}
+
+// ============================ THE BRAIN ============================
+// Data-driven intelligence page. All numbers come from GET /admin/brain
+// (packages/mainframe/src/brain.ts) — no external LLM. The Casa Brain console
+// pattern-matches questions against that live snapshot in askBrain().
+const HEALTH_COLOR = (n) => (n >= 75 ? 'var(--green)' : n >= 50 ? 'var(--amber)' : 'var(--red)');
+const SUB_META = [
+  ['coverage', 'Coverage', 'Recent jobs that drew a bid'],
+  ['trust', 'Trust', 'Ratings & worker standing'],
+  ['liquidity', 'Liquidity', 'Credit float vs debt'],
+  ['throughput', 'Throughput', 'Completed vs cancelled'],
+];
+const SEV_DOT = { high: 'var(--red)', med: 'var(--amber)', low: 'var(--muted)' };
+
+// Client-side reweight: items whose kind is emphasized by the active focus mode float up.
+function reweight(items, emphasizeKinds) {
+  return items
+    .map((it) => ({ ...it, _emph: emphasizeKinds.includes(it.kind) }))
+    .sort((a, b) => (b._emph ? 1 : 0) - (a._emph ? 1 : 0));
+}
+
+// Data-driven natural-language responder. Swap the body for a Claude API call later
+// (keep the signature) to enable full reasoning — everything it needs is in `brain`.
+function askBrain(question, brain) {
+  if (!brain) return 'The Brain is still loading — try again in a moment.';
+  const s = (question || '').toLowerCase().trim();
+  const has = (...ws) => ws.some((w) => s.includes(w));
+  const m = (p) => 'EGP ' + egp(p);
+  if (!s) return 'Ask me about health, supply/zones, worker risk, money/liquidity, today\'s activity, or what to do next.';
+  if (has('health', 'how are we', 'how we doing', 'overall', 'summary', 'status')) {
+    const subs = brain.subScores;
+    const weakest = Object.entries(subs).sort((a, b) => a[1] - b[1])[0];
+    return `Platform health is ${brain.healthScore}/100. Weakest driver is ${weakest[0]} at ${weakest[1]}/100 — focus there. (coverage ${subs.coverage} · trust ${subs.trust} · liquidity ${subs.liquidity} · throughput ${subs.throughput})`;
+  }
+  if (has('zone', 'supply', 'worker', 'undersupplied', 'demand', 'recruit', 'coverage')) {
+    const gaps = brain.demand.filter((d) => d.gap > 0).slice(0, 3);
+    if (!gaps.length) return 'No undersupplied trade/zones right now — open jobs are covered by approved workers.';
+    return 'Most undersupplied: ' + gaps.map((d) => `${d.trade} in ${d.zone} (${d.openJobs} open vs ${d.approvedWorkers} workers, gap ${d.gap})`).join('; ') + '. Approve or recruit workers there.';
+  }
+  if (has('risk', 'suspend', 'strike', 'quality', 'worst', 'bad worker')) {
+    const wr = brain.workerRisk.slice(0, 5);
+    if (!wr.length) return 'No workers flagged for risk — no strikes, suspensions, low ratings or debt.';
+    return 'Highest-risk workers: ' + wr.map((w) => `${w.name} (${w.reason})`).join('; ') + '.';
+  }
+  if (has('money', 'liquid', 'debt', 'escrow', 'cash', 'wallet', 'credit')) {
+    const p = brain.pulse;
+    return `Liquidity sub-score ${brain.subScores.liquidity}/100. Escrow held ${m(p.escrowPst)}. Commission captured to date ${m(p.revenueTotalPst)}.` + (brain.anomalies.some((a) => a.kind === 'liquidity_risk') ? ' Some workers carry commission debt — see Diagnose.' : '');
+  }
+  if (has('today', 'revenue', 'earn', 'activity', 'jobs today')) {
+    const p = brain.pulse;
+    return `Today: ${p.jobsToday} job(s) posted, ${p.activeJobs} active, ${p.openJobs} open. Commission today ${m(p.revenueTodayPst)}, last 7 days ${m(p.revenue7dPst)}.`;
+  }
+  if (has('anomal', 'wrong', 'problem', 'alert', 'issue')) {
+    if (!brain.anomalies.length) return 'No anomalies detected — the platform is clean right now.';
+    return 'Top issues: ' + brain.anomalies.slice(0, 3).map((a) => `${a.title} (${a.severity}, ${a.count})`).join('; ') + '.';
+  }
+  if (has('recommend', 'what should', 'do next', 'action', 'todo', 'next')) {
+    if (!brain.recommendations.length) return 'No pending recommendations — nothing needs a one-click action right now.';
+    return 'Suggested next actions: ' + brain.recommendations.slice(0, 3).map((r) => r.title).join('; ') + '. Use the Act panel to execute.';
+  }
+  return `I read live platform data. Try: "how's our health?", "which zones need workers?", "who's high risk?", "how's our liquidity?", or "what should I do next?". Health is ${brain.healthScore}/100 right now.`;
+}
+
+function Ring({ score }) {
+  const R = 54, C = 2 * Math.PI * R, off = C * (1 - score / 100), col = HEALTH_COLOR(score);
+  return (
+    <svg width="140" height="140" viewBox="0 0 140 140" className="ring">
+      <circle cx="70" cy="70" r={R} fill="none" stroke="var(--line2)" strokeWidth="12" />
+      <circle cx="70" cy="70" r={R} fill="none" stroke={col} strokeWidth="12" strokeLinecap="round"
+        strokeDasharray={C} strokeDashoffset={off} transform="rotate(-90 70 70)" style={{ transition: 'stroke-dashoffset .6s ease' }} />
+      <text x="70" y="66" textAnchor="middle" fontSize="34" fontWeight="800" fill={col}>{score}</text>
+      <text x="70" y="90" textAnchor="middle" fontSize="10" letterSpacing="1.5" fill="var(--muted)">/ 100</text>
+    </svg>
+  );
+}
+
+function Brain({ brain, reload, setPage }) {
+  const [focus, setFocus] = useState(() => localStorage.getItem('cic_focus') || 'growth');
+  const [busy, setBusy] = useState('');
+  const [toast, setToast] = useState('');
+  const [q, setQ] = useState('');
+  const [answer, setAnswer] = useState('');
+  useEffect(() => { localStorage.setItem('cic_focus', focus); }, [focus]);
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 4000); return () => clearTimeout(t); }, [toast]);
+
+  if (!brain) return <div className="empty">Waking the Brain…</div>;
+  const emphasize = (brain.focusModes[focus] || {}).emphasizeKinds || [];
+  const anomalies = reweight(brain.anomalies, emphasize);
+  const recommendations = reweight(brain.recommendations, emphasize);
+
+  async function act(rec) {
+    const a = rec.action;
+    if (a.kind === 'navigate') { setPage(a.page); return; }
+    if (!window.confirm(`${a.label}?\n\n${rec.detail}`)) return;
+    setBusy(rec.id);
+    try { const r = await api(a.endpoint, a.method || 'POST', a.body); setToast('✓ ' + a.label + ' — ' + (r.status || r.ok ? 'done' : JSON.stringify(r).slice(0, 60))); await reload(); }
+    catch (e) { setToast('✗ ' + (e.data?.error || 'failed')); }
+    finally { setBusy(''); }
+  }
+  function ask() { setAnswer(askBrain(q, brain)); }
+
+  const p = brain.pulse;
+  return (
+    <>
+      <div className="brain-top">
+        <div>
+          <h2 className="title">🧠 The Brain</h2>
+          <div className="sub">Live intelligence · sense → diagnose → predict → act · refreshes every 5s</div>
+        </div>
+        <div className="focus-tabs">
+          {Object.values(brain.focusModes).map((mo) => (
+            <button key={mo.id} className={focus === mo.id ? 'on' : ''} onClick={() => setFocus(mo.id)} title={mo.description}>{mo.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {toast && <div className="brain-toast">{toast}</div>}
+
+      <div className="card brain-hero">
+        <div className="hero-ring"><Ring score={brain.healthScore} /><div className="hero-label">Platform Health</div></div>
+        <div className="subs">
+          {SUB_META.map(([k, label, hint]) => {
+            const v = brain.subScores[k] ?? 0;
+            return (
+              <div key={k} className="meter">
+                <div className="meter-h"><span>{label}</span><b style={{ color: HEALTH_COLOR(v) }}>{v}</b></div>
+                <div className="meter-bar"><div style={{ width: v + '%', background: HEALTH_COLOR(v) }} /></div>
+                <div className="meter-hint">{hint}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* SENSE */}
+      <div className="lens">
+        <div className="lens-head"><span className="lens-tag sense">SENSE</span><span className="lens-desc">What the platform is doing right now</span></div>
+        <div className="stats">
+          <Stat c="a" v={p.jobsToday} l="Jobs today" />
+          <Stat v={p.activeJobs} l="Active jobs" />
+          <Stat c="p" v={p.openJobs} l="Open jobs" />
+          <Stat c="gr" v={p.approvedWorkers} l="Approved workers" />
+          <Stat c="gold" v={'EGP ' + egp(p.escrowPst)} l="In escrow" />
+          <Stat c="g" v={'EGP ' + egp(p.revenueTodayPst)} l="Commission today" />
+          <Stat c="g" v={'EGP ' + egp(p.revenue7dPst)} l="Commission · 7d" />
+          <Stat v={p.jobsTotal} l="Jobs all-time" />
+        </div>
+      </div>
+
+      {/* DIAGNOSE */}
+      <div className="lens">
+        <div className="lens-head"><span className="lens-tag diagnose">DIAGNOSE</span><span className="lens-desc">Anomaly radar · {focus} focus first</span></div>
+        <div className="card">
+          {anomalies.length === 0 ? <div className="empty">No anomalies — the platform is clean.</div> :
+            anomalies.map((a) => (
+              <div key={a.id} className={'anom' + (a._emph ? ' emph' : '')}>
+                <span className="dot" style={{ background: SEV_DOT[a.severity] }} />
+                <div className="anom-body">
+                  <div className="anom-title">{a.title} <span className="pill off">{a.count}</span>{a._emph && <span className="pill gold">FOCUS</span>}</div>
+                  <div className="anom-detail">{a.detail}</div>
+                  <div className="anom-hint">→ {a.actionHint}</div>
+                </div>
+                <span className={'sev sev-' + a.severity}>{a.severity}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* PREDICT */}
+      <div className="lens">
+        <div className="lens-head"><span className="lens-tag predict">PREDICT</span><span className="lens-desc">Demand vs supply by trade & zone</span></div>
+        <div className="card">
+          {brain.demand.length === 0 ? <div className="empty">No demand data yet.</div> :
+            <div className="tblwrap"><table>
+              <thead><tr><th>Trade</th><th>Zone</th><th>Open jobs</th><th>Approved workers</th><th>Gap</th></tr></thead>
+              <tbody>{brain.demand.map((d, i) => (
+                <tr key={i} className={d.gap > 0 ? 'undersupplied' : ''}>
+                  <td><b>{d.trade}</b></td><td>{d.zone}</td><td>{d.openJobs}</td><td>{d.approvedWorkers}</td>
+                  <td>{d.gap > 0 ? <span className="pill bad">+{d.gap} short</span> : <span className="pill on">covered</span>}</td>
+                </tr>
+              ))}</tbody>
+            </table></div>}
+        </div>
+      </div>
+
+      {/* ACT */}
+      <div className="lens">
+        <div className="lens-head"><span className="lens-tag act">ACT</span><span className="lens-desc">One-click actions on real endpoints · {focus} focus first</span></div>
+        <div className="card">
+          {recommendations.length === 0 ? <div className="empty">Nothing to act on — no recommendations right now.</div> :
+            recommendations.map((r) => (
+              <div key={r.id} className={'rec' + (r._emph ? ' emph' : '')}>
+                <div className="rec-body">
+                  <div className="rec-title"><span className={'sev sev-' + (r.priority === 'high' ? 'high' : r.priority === 'med' ? 'med' : 'low')}>{r.priority}</span> {r.title}{r._emph && <span className="pill gold">FOCUS</span>}</div>
+                  <div className="rec-detail">{r.detail}</div>
+                </div>
+                <button className={'act ' + (r.action.kind === 'navigate' ? 'ghost' : 'green')} disabled={busy === r.id} onClick={() => act(r)}>
+                  {busy === r.id ? '…' : r.action.label}
+                </button>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* CASA BRAIN CONSOLE */}
+      <div className="lens">
+        <div className="lens-head"><span className="lens-tag casa">CASA BRAIN</span><span className="lens-desc">Ask about the platform in plain language</span></div>
+        <div className="card">
+          <div className="casa-note">Answers from live platform data. Connect a Claude API key to enable full natural-language reasoning.</div>
+          <div className="casa-in">
+            <input value={q} placeholder="e.g. how's our health? · which zones need workers? · who's high risk?"
+              onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask()} />
+            <button className="act" onClick={ask}>Ask</button>
+          </div>
+          {answer && <div className="casa-out">{answer}</div>}
+          <div className="casa-chips">
+            {["How's our health?", 'Which zones need workers?', "Who's high risk?", "How's our liquidity?", 'What should I do next?'].map((c) => (
+              <button key={c} className="chip" onClick={() => { setQ(c); setAnswer(askBrain(c, brain)); }}>{c}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

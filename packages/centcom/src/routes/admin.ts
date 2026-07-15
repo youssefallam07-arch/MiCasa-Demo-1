@@ -18,6 +18,8 @@ adminRouter.get('/topups', h(async (_req, res) => res.json({ topups: await admin
 adminRouter.get('/releases', h(async (_req, res) => res.json({ releases: await admin.pendingReleases() })));
 adminRouter.get('/jobs', h(async (_req, res) => res.json({ jobs: await admin.jobsTable() })));
 adminRouter.get('/config', h(async (_req, res) => res.json({ config: await admin.getConfig() })));
+// CIC "Brain" — one intelligence snapshot (health, pulse, anomalies, demand, recommendations, risk).
+adminRouter.get('/brain', h(async (_req, res) => res.json(await admin.computeBrain())));
 
 // ---- CENTCOM (owner master view) ----
 adminRouter.get('/registry', h(async (_req, res) => res.json({ accounts: await admin.allAccounts() })));
