@@ -109,4 +109,17 @@ async function main() {
   console.log('Credentials also written to docs/FIRST_LOGIN.md (gitignored).');
 }
 
-main().then(() => prisma.$disconnect()).catch(async (e) => { console.error(e); await prisma.$disconnect(); process.exit(1); });
+main().then(() => prisma.$disconnect()).catch(async (e) => {
+  console.error(e);
+  await prisma.$disconnect().catch(() => {});
+  // Boot seeding (`npm start` -> seed:boot --if-empty) must never take the whole
+  // deployment down: the server can serve with an empty DB and the admin login
+  // still works (synced from ADMIN_PASSWORD on boot). Fail loudly but exit 0 so
+  // `npm start` proceeds to the server. A manual `seed` run still exits non-zero.
+  const boot = process.argv.includes('--if-empty') || process.env.SEED_IF_EMPTY;
+  if (boot) {
+    console.error('[seed:boot] seeding failed — continuing to start the server anyway (empty/partial DB; admin login still works).');
+    process.exit(0);
+  }
+  process.exit(1);
+});
