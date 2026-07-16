@@ -45,3 +45,74 @@
 .mp-font { font-family: var(--font); }
 /* Tabular figures on money/number cells — attach to numeric elements. */
 .mp-num, .tabular, .money, .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+
+/* ============================================================
+   MiCasa Pro — component kit (DS2). One source for every app:
+   React apps use className, single-file apps use class. All light-
+   theme; each app adopts these (replacing its pills/flat fills) in
+   its own reskin phase (DS3 customer / DS4 worker / DS5 CIC).
+   Prefixed `mp-` so they coexist with each app's current classes
+   during migration.
+   ============================================================ */
+
+/* Button — solid teal / ghost / danger. 52px tap target, pressed depth. */
+.mp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 20px;border:1px solid transparent;border-radius:var(--r-md);background:var(--teal);color:#fff;font-family:var(--font);font-size:15px;font-weight:600;line-height:1;cursor:pointer;box-shadow:var(--sh-sm);transition:transform .08s ease,background .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:transparent}
+.mp-btn:hover{background:#0A6157}
+.mp-btn:active{transform:translateY(1px);background:var(--teal-press);box-shadow:none}
+.mp-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.mp-btn svg{width:18px;height:18px;stroke-width:1.75;flex-shrink:0}
+.mp-btn.block{width:100%}
+.mp-btn.ghost{background:var(--surface);color:var(--teal);border-color:var(--border-strong);box-shadow:none}
+.mp-btn.ghost:hover{background:var(--teal-tint)}
+.mp-btn.ghost:active{transform:translateY(1px);background:var(--teal-tint)}
+.mp-btn.danger{background:var(--surface);color:var(--red);border-color:rgba(210,66,56,.32);box-shadow:none}
+.mp-btn.danger:hover{background:rgba(210,66,56,.08)}
+.mp-btn.danger:active{transform:translateY(1px);background:rgba(210,66,56,.12)}
+
+/* Card — white, hairline, soft depth. */
+.mp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:18px}
+
+/* Input — label above, 52px, teal focus ring. */
+.mp-field{display:block;margin-bottom:14px}
+.mp-field>label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+.mp-input{width:100%;min-height:var(--tap);padding:0 14px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-md);color:var(--ink);font-family:var(--font);font-size:15px;outline:none;transition:border-color .15s ease,box-shadow .15s ease}
+.mp-input::placeholder{color:var(--ink-3)}
+.mp-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-tint)}
+textarea.mp-input{padding:12px 14px;min-height:96px;resize:vertical;line-height:1.5}
+
+/* StatusDot — dot + label. Replaces ALL pills. */
+.mp-dot{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.mp-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex-shrink:0}
+.mp-dot.teal::before{background:var(--teal)}
+.mp-dot.green::before{background:var(--green)}
+.mp-dot.amber::before{background:var(--amber)}
+.mp-dot.red::before{background:var(--red)}
+
+/* Money — tabular, currency de-emphasised. */
+.mp-money{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-weight:700;color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
+.mp-money .cur{font-size:.62em;font-weight:600;color:var(--ink-3);margin-inline-end:.35em}
+.mp-money.hero{font-size:40px;line-height:1.05}
+
+/* Badge — Me3allem tiers. Subtle, never saturated. */
+.mp-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;letter-spacing:.02em;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--border)}
+.mp-badge svg{width:12px;height:12px;stroke-width:2}
+.mp-badge.tier-gold{background:#FBF3E0;color:#8A6D1F;border-color:#EBD9A8}
+.mp-badge.tier-silver{background:#F1F2F4;color:#5C616E;border-color:#DDE0E5}
+.mp-badge.tier-bronze{background:#F6ECE4;color:#8A5A3C;border-color:#E6D0BF}
+
+/* Toast — dark, floats above the light UI. */
+.mp-toast{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:500;padding:12px 16px;border-radius:var(--r-md);box-shadow:var(--sh-lg)}
+.mp-toast svg{width:18px;height:18px;stroke-width:2;flex-shrink:0}
+.mp-toast.ok svg{color:#5FE0A0}
+.mp-toast.err svg{color:#FF9B93}
+
+/* Skeleton — shimmer placeholder (respects reduced-motion). */
+.mp-skeleton{background:linear-gradient(90deg,var(--surface-2) 25%,#EFEDE7 37%,var(--surface-2) 63%);background-size:400% 100%;border-radius:var(--r-sm);animation:mp-shimmer 1.4s ease infinite}
+@keyframes mp-shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.mp-skeleton{animation:none}}
+
+/* EmptyState — line icon + text. */
+.mp-empty{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:40px 20px;color:var(--ink-3)}
+.mp-empty svg{width:32px;height:32px;stroke-width:1.5;color:var(--border-strong)}
+.mp-empty b{font-size:15px;font-weight:600;color:var(--ink-2)}
+.mp-empty p{font-size:13px;max-width:280px;line-height:1.5;margin:0}

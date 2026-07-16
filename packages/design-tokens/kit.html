@@ -1,0 +1,94 @@
+<!doctype html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MiCasa Pro — Component Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./micasa-pro.css">
+<style>
+:root{color-scheme:light}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+.page{max-width:860px;margin:0 auto;padding:56px 24px 80px}
+.mast{display:flex;gap:20px;align-items:flex-start;margin-bottom:44px}
+.mark{flex-shrink:0;width:56px;height:56px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center}
+.logo{width:34px;height:34px}
+h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0;line-height:1.1}
+h1 span{color:var(--teal);font-weight:600}
+.lede{color:var(--ink-2);font-size:15px;line-height:1.6;margin:8px 0 0;max-width:60ch}
+.spec{padding:26px 0;border-top:1px solid var(--border)}
+.spec-h{margin-bottom:18px}
+.spec-h h2{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:0}
+.spec-h p{font-size:13.5px;color:var(--ink-2);margin:5px 0 0;line-height:1.5;max-width:62ch}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.ck-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ck-h b{font-size:15px;font-weight:600}
+.ck-p{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.ck-f{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.foot{margin-top:40px;padding-top:22px;border-top:1px solid var(--border);font-size:12.5px;color:var(--ink-3)}
+.foot code{font-family:ui-monospace,'Consolas',monospace;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 6px;font-size:11.5px}
+@media(max-width:560px){.mast{flex-direction:column;gap:14px}h1{font-size:25px}.page{padding:36px 18px 60px}}</style></head><body>
+
+<div class="page">
+  <header class="mast">
+    <div class="mark"><svg viewBox="0 0 200 200" class="logo"><path d="M40 95 L100 42 L160 95" fill="none" stroke="var(--ink)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M55 92 L55 158 L145 158 L145 92" fill="none" stroke="var(--teal)" stroke-width="14" stroke-linecap="round"/><path d="M78 158 L78 112 L100 134 L122 112 L122 158" fill="none" stroke="#C79A3E" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div>
+      <h1>MiCasa&nbsp;Pro <span>Component Kit</span></h1>
+      <p class="lede">The shared primitives every screen is built from — one source, adopted by each app as it moves onto the light system. Limestone ground, deep Egyptian teal, IBM&nbsp;Plex&nbsp;Sans&nbsp;Arabic.</p>
+    </div>
+  </header>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Buttons</h2><p>Solid teal for the primary action, ghost for secondary, danger for destructive. 52px tap target; presses down.</p></div>
+    <div class="row"><button class="mp-btn">Accept bid</button><button class="mp-btn ghost">View details</button><button class="mp-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Cancel job</button><button class="mp-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Post a job</button><button class="mp-btn" disabled>Disabled</button></div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Cards</h2><p>White surface, hairline border, soft shadow — depth instead of flat fills.</p></div>
+    <div class="row">
+      <div class="mp-card" style="max-width:280px"><div class="ck-h"><b>Ahmed — plumber</b><span class="mp-badge tier-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/></svg> Gold</span></div><p class="ck-p">Maadi · <span class="mp-dot green">verified</span></p><div class="ck-f"><span class="mp-money"><span class="cur">EGP</span>280</span><button class="mp-btn" style="min-height:40px;padding:0 14px;font-size:13px">Accept</button></div></div>
+      <div class="mp-card" style="max-width:220px"><span class="lbl">Held commission</span><div class="mp-money hero" style="margin-top:6px"><span class="cur">EGP</span>34</div><p class="ck-p" style="margin-top:8px"><span class="mp-dot amber">in escrow</span></p></div>
+    </div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Inputs</h2><p>Label above the field, 52px tall, teal focus ring.</p></div>
+    <div class="row" style="align-items:flex-start">
+      <div style="max-width:280px;width:100%"><div class="mp-field"><label>What do you need?</label><input class="mp-input" placeholder="e.g. leaking kitchen tap"></div><div class="mp-field" style="margin:0"><label>Your budget (EGP)</label><input class="mp-input" value="300"></div></div>
+      <div style="max-width:280px;width:100%"><div class="mp-field" style="margin:0"><label>Notes for the specialist</label><textarea class="mp-input" placeholder="Anything they should know before arriving…"></textarea></div></div>
+    </div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Status</h2><p>A dot and a word — replaces every colored pill. Semantic color, never decoration.</p></div>
+    <div class="row"><span class="mp-dot teal">open</span><span class="mp-dot green">approved</span><span class="mp-dot amber">pending review</span><span class="mp-dot red">suspended</span><span class="mp-dot">draft</span></div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Money</h2><p>Tabular figures, currency de-emphasised so the number leads.</p></div>
+    <div class="row" style="align-items:baseline"><span class="mp-money hero"><span class="cur">EGP</span>1,240</span><span class="mp-money" style="font-size:22px"><span class="cur">EGP</span>280</span><span class="mp-money" style="font-size:16px;color:var(--ink-2)"><span class="cur">EGP</span>34 held</span></div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Me3allem tiers</h2><p>Worker standing. Subtle, warm — never a saturated pill.</p></div>
+    <div class="row"><span class="mp-badge tier-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/></svg> Gold me3allem</span><span class="mp-badge tier-silver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/></svg> Silver</span><span class="mp-badge tier-bronze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/></svg> Bronze</span><span class="mp-badge">New</span></div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Toast</h2><p>Dark, floats above the light UI. Icon carries the outcome.</p></div>
+    <div class="row"><span class="mp-toast ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Bid accepted — Ahmed is on the way</span><span class="mp-toast err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Not enough credit to bid</span></div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Skeleton</h2><p>Shimmer while data loads. Stops for reduced-motion.</p></div>
+    <div class="mp-card" style="max-width:300px"><div class="mp-skeleton" style="height:14px;width:60%"></div><div class="mp-skeleton" style="height:12px;width:90%;margin-top:10px"></div><div class="mp-skeleton" style="height:12px;width:75%;margin-top:8px"></div><div class="mp-skeleton" style="height:40px;width:100%;margin-top:16px;border-radius:12px"></div></div>
+  </section>
+
+  <section class="spec">
+    <div class="spec-h"><h2>Empty state</h2><p>A quiet line icon and a plain sentence — no dead ends.</p></div>
+    <div class="mp-card" style="max-width:340px"><div class="mp-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><b>No open jobs yet</b><p>When a customer posts a job in your trade and zone, it shows up here.</p></div></div>
+  </section>
+
+  <footer class="foot">MiCasa Pro · DS2 component kit · one source in <code>packages/design-tokens/micasa-pro.css</code></footer>
+</div>
+</body></html>
