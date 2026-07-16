@@ -2,7 +2,10 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireRole } from '../auth';
 import { h, body } from '../helpers';
-import { listOpenJobsFor, submitBid, myJobsWorker, markComplete, cancelByWorker, releaseHold, accountView, requestTopup, rate, prisma } from '../core';
+import { listOpenJobsFor, submitBid, myJobsWorker, markComplete, cancelByWorker, releaseHold, accountView, requestTopup, rate, prisma, logEvent } from '../core';
+
+// Trades a worker can register (must match the apps' service list).
+const TRADES = new Set(['plumbing', 'electrical', 'ac', 'carpentry', 'painting', 'appliance', 'handyman', 'cleaning', 'moving']);
 
 export const workerRouter = Router();
 workerRouter.use(requireRole('worker'));
@@ -25,6 +28,26 @@ workerRouter.use((req, res, next) => {
 
 workerRouter.get('/me', h(async (req, res) => {
   const wp = await prisma.workerProfile.findUnique({ where: { userId: req.user!.sub } });
+  res.json({ profile: wp });
+}));
+
+// Worker edits their own profile: which professions they take, their zone, a short bio.
+workerRouter.patch('/me', body(z.object({
+  professions: z.array(z.string()).max(6).optional(),
+  zone: z.string().min(1).max(60).optional(),
+  bio: z.string().max(280).optional(),
+})), h(async (req, res) => {
+  const data: any = {};
+  if (req.body.professions) {
+    const profs = [...new Set(req.body.professions.filter((t: string) => TRADES.has(t)))];
+    if (!profs.length) return res.status(400).json({ error: 'no_valid_profession' });
+    data.professions = profs.join(',');
+    data.trade = profs[0]; // keep the primary trade in sync with the first profession
+  }
+  if (req.body.zone !== undefined) data.zone = req.body.zone;
+  if (req.body.bio !== undefined) data.bio = req.body.bio;
+  const wp = await prisma.workerProfile.update({ where: { userId: req.user!.sub }, data });
+  logEvent(req.user!.sub, 'worker.profile_updated', req.user!.name || '', Object.keys(data).join(', '));
   res.json({ profile: wp });
 }));
 

@@ -37,6 +37,8 @@ model WorkerProfile {
   userId             String   @unique
   user               User     @relation(fields: [userId], references: [id])
   trade              String
+  professions        String   @default("") // CSV of trades the worker takes (first = primary/trade); empty falls back to `trade`
+  bio                String   @default("")  // short "about me" shown on the profile
   zone               String
   ratingSum          Int      @default(0)
   ratingCount        Int      @default(0)

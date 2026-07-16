@@ -51,15 +51,16 @@ async function main() {
   const khaled = await prisma.user.create({ data: { role: 'customer', username: 'khaled', name: 'خالد', phone: '01000000002', passwordHash: hash('password123') } });
 
   // ---- workers ----
-  async function makeWorker(username: string, name: string, trade: string, zone: string, verification: string, walletMode: string) {
+  async function makeWorker(username: string, name: string, trade: string, zone: string, verification: string, walletMode: string, professions?: string[], bio = '') {
     const u = await prisma.user.create({ data: { role: 'worker', username, name, phone: '0111' + Math.floor(Math.random() * 1e7), passwordHash: hash('password123') } });
-    await prisma.workerProfile.create({ data: { userId: u.id, trade, zone, verificationStatus: verification, walletMode } });
+    const profs = (professions && professions.length ? professions : [trade]);
+    await prisma.workerProfile.create({ data: { userId: u.id, trade: profs[0], professions: profs.join(','), bio, zone, verificationStatus: verification, walletMode } });
     await prisma.serviceCreditAccount.create({ data: { workerId: u.id } });
     return u;
   }
-  const ahmed = await makeWorker('ahmed', 'أحمد السباك', 'plumbing', 'المعادي', 'approved', 'prepaid');   // funded, prepaid
-  const mahmoud = await makeWorker('mahmoud', 'محمود الكهربائي', 'electrical', 'المعادي', 'approved', 'prepaid'); // funded, prepaid
-  await makeWorker('saeed', 'سعيد النجار', 'carpentry', 'مدينة نصر', 'pending', 'prepaid');               // in verification queue
+  const ahmed = await makeWorker('ahmed', 'أحمد السباك', 'plumbing', 'المعادي', 'approved', 'prepaid', ['plumbing', 'ac'], 'سباك وفني تكييفات — خبرة 8 سنين في المعادي.');   // funded, prepaid, 2 trades
+  const mahmoud = await makeWorker('mahmoud', 'محمود الكهربائي', 'electrical', 'المعادي', 'approved', 'prepaid', ['electrical', 'appliance'], 'كهربائي وفني أجهزة منزلية.'); // funded, prepaid, 2 trades
+  await makeWorker('saeed', 'سعيد النجار', 'carpentry', 'مدينة نصر', 'pending', 'prepaid', ['carpentry']);               // in verification queue
 
   // fund service credit (manual top-up → admin-confirmed). Prepaid-only: a worker
   // must hold positive credit >= commission to bid AND to accept, so every worker

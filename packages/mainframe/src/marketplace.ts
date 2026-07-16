@@ -32,8 +32,11 @@ export async function listOpenJobsFor(workerId: string) {
   const wp = await prisma.workerProfile.findUnique({ where: { userId: workerId } });
   if (!wp) return [];
   const cfg = await getConfig();
+  // A worker can register multiple professions; they see open jobs for ANY of them.
+  const trades = (wp.professions || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (!trades.length) trades.push(wp.trade);
   const jobs = await prisma.job.findMany({
-    where: { status: 'open', trade: wp.trade, zone: wp.zone },
+    where: { status: 'open', trade: { in: trades }, zone: wp.zone },
     orderBy: { createdAt: 'desc' }, include: { bids: true, customer: true },
   });
   const out = [];
