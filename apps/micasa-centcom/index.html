@@ -8,13 +8,13 @@
 <style>
 :root{
   /* MiCasa Pro — light system (owner terminal). Var names kept; values flip. */
-  --bg:#F6F4EF;--bg2:#EFEDE7;--panel:#FFFFFF;--panel2:#FBFAF7;
-  --line:#E8E4DC;--line2:#D8D3C8;
+  --bg:#F1EDE3;--bg2:#E9E4D8;--panel:#FCFAF5;--panel2:#F4F0E8;
+  --line:#DFD7C6;--line2:#CDC3AF;
   --accent:#0B6E63;--accent2:#084F47;--gold:#B58324;--green:#1E9E5A;--red:#D24238;--amber:#B5820A;--purple:#6D5BD0;
   --text:#171A19;--muted:#5C615E;--dim:#8B908C;
-  --surface:#FFFFFF;--surface-2:#FBFAF7;--border:#E8E4DC;--border-strong:#D8D3C8;
+  --surface:#FCFAF5;--surface-2:#F4F0E8;--border:#DFD7C6;--border-strong:#CDC3AF;
   --ink:#171A19;--ink-2:#5C615E;--ink-3:#8B908C;--teal:#0B6E63;--teal-press:#084F47;--teal-tint:#E4F0EE;
-  --sh-sm:0 1px 2px rgba(20,25,24,.06),0 1px 1px rgba(20,25,24,.04);
+  --sh-sm:0 1px 3px rgba(20,25,24,.08),0 1px 2px rgba(20,25,24,.05);
   --sh-md:0 4px 12px rgba(20,25,24,.08),0 2px 4px rgba(20,25,24,.04);
   --sh-lg:0 12px 32px rgba(20,25,24,.12);
 }
@@ -60,9 +60,10 @@ a{color:var(--accent);text-decoration:none}
 
 .wrap{display:flex;min-height:calc(100vh - 57px)}
 .nav{width:210px;flex-shrink:0;border-inline-end:1px solid var(--line);padding:16px 12px;position:sticky;top:57px;height:calc(100vh - 57px);overflow:auto}
-.nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:start;padding:11px 13px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:3px}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:start;padding:11px 13px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:3px;border:1px solid transparent;transition:background .12s,border-color .12s}
+.nav button:hover{background:var(--surface-2);border-color:var(--line)}
 .nav button svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
-.nav button.on{background:var(--panel2);color:var(--text)}
+.nav button.on{background:var(--teal-tint);color:var(--accent);border-color:#BCDDD6}
 .nav button.on svg{color:var(--accent)}
 .nav .navsec{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);font-weight:800;padding:16px 13px 7px}
 .main{flex:1;padding:24px 26px;overflow:auto;max-width:100%}

@@ -4,7 +4,7 @@ export function landingHtml(): string {
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MiCasa — Demo Launchpad</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>
-:root{--bg:#F6F4EF;--panel:#FFFFFF;--line:#E8E4DC;--accent:#0B6E63;--gold:#B58324;--green:#1E9E5A;--text:#171A19;--muted:#5C615E}
+:root{--bg:#F1EDE3;--panel:#FCFAF5;--line:#DFD7C6;--accent:#0B6E63;--gold:#B58324;--green:#1E9E5A;--text:#171A19;--muted:#5C615E}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:radial-gradient(120% 90% at 50% 0%,#EAF1EF,var(--bg) 60%);color:var(--text);font-family:'IBM Plex Sans Arabic','Tajawal',system-ui,sans-serif;min-height:100vh;padding:40px 18px}
 .wrap{max-width:820px;margin:0 auto}

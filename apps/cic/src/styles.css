@@ -1,12 +1,12 @@
 :root{
   /* MiCasa Pro — light system (DS5). Var names kept; values flip dark -> light. */
-  --bg:#F6F4EF;--bg2:#EFEDE7;--panel:#FFFFFF;--panel2:#FBFAF7;
-  --line:#E8E4DC;--line2:#D8D3C8;
+  --bg:#F1EDE3;--bg2:#E9E4D8;--panel:#FCFAF5;--panel2:#F4F0E8;
+  --line:#DFD7C6;--line2:#CDC3AF;
   --accent:#0B6E63;--accent2:#084F47;--gold:#B58324;--green:#1E9E5A;--red:#D24238;--amber:#B5820A;--purple:#6D5BD0;
   --text:#171A19;--muted:#5C615E;--dim:#8B908C;
-  --surface:#FFFFFF;--surface-2:#FBFAF7;--border:#E8E4DC;--border-strong:#D8D3C8;
+  --surface:#FCFAF5;--surface-2:#F4F0E8;--border:#DFD7C6;--border-strong:#CDC3AF;
   --ink:#171A19;--ink-2:#5C615E;--ink-3:#8B908C;--teal:#0B6E63;--teal-press:#084F47;--teal-tint:#E4F0EE;
-  --sh-sm:0 1px 2px rgba(20,25,24,.06),0 1px 1px rgba(20,25,24,.04);
+  --sh-sm:0 1px 3px rgba(20,25,24,.08),0 1px 2px rgba(20,25,24,.05);
   --sh-md:0 4px 12px rgba(20,25,24,.08),0 2px 4px rgba(20,25,24,.04);
   --sh-lg:0 12px 32px rgba(20,25,24,.12);
   --font:'IBM Plex Sans Arabic','Tajawal',system-ui,sans-serif;
@@ -31,8 +31,9 @@ input,select{font-family:inherit}
 .side .brand b{color:var(--accent)}
 .side .env{font-size:9px;letter-spacing:1.5px;color:var(--red);background:rgba(210,66,56,.12);padding:3px 8px;border-radius:10px;font-weight:800}
 .side nav{margin-top:24px;display:flex;flex-direction:column;gap:3px}
-.side nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--muted);text-align:left;width:100%}
-.side nav button.on{background:var(--panel2);color:var(--text)}
+.side nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--muted);text-align:left;width:100%;border:1px solid transparent;transition:background .12s,border-color .12s}
+.side nav button:hover{background:var(--surface-2);border-color:var(--line)}
+.side nav button.on{background:var(--teal-tint);color:var(--accent);border-color:#BCDDD6}
 .side .bdg{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:9px;padding:1px 7px}
 .side .out{margin-top:20px;color:var(--red);font-size:12px;font-weight:700;padding:8px 12px}
 .main{flex:1;padding:26px 30px;overflow:auto;max-width:calc(100vw - 220px)}
