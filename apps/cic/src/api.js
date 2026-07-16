@@ -66,7 +66,7 @@ if (_imp && _imp.user) {
   const bar = document.createElement('div');
   bar.dir = 'ltr';
   bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#D9B36A;color:#04070E;font:600 13px system-ui,sans-serif;padding:7px 14px;display:flex;justify-content:center;gap:14px;align-items:center;box-shadow:0 1px 6px rgba(0,0,0,.3)';
-  bar.innerHTML = '<span>👁 Viewing as <b>' + _imp.user.name + '</b> (admin impersonation)</span>';
+  bar.innerHTML = '<span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg> Viewing as <b>' + _imp.user.name + '</b> (admin impersonation)</span>';
   const exit = document.createElement('a');
   exit.textContent = 'Exit';
   exit.style.cssText = 'color:#04070E;text-decoration:underline;cursor:pointer';

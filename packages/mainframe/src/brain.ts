@@ -144,7 +144,7 @@ export async function computeBrain() {
     anomalies.push({
       id: 'quality_risk', severity: 'med', kind: 'quality_risk',
       title: 'Workers on quality watch', count: qualityWorkers.length,
-      detail: `${qualityWorkers.length} worker(s) have a strike or a rating below 3.5★ — trust risk to the marketplace.`,
+      detail: `${qualityWorkers.length} worker(s) have a strike or a rating below 3.5/5 — trust risk to the marketplace.`,
       actionHint: 'Review in Wallets; suspend repeat offenders.',
     });
   }
@@ -230,7 +230,7 @@ export async function computeBrain() {
     recommendations.push({
       id: `rec-release-${r.jobId}`, priority: 'med', kind: 'pending_release',
       title: 'Approve a cancellation release',
-      detail: `Job ${String(r.jobId).slice(-6)} (${r.trade}) — release the EGP ${((r.heldPst || 0) / 100).toLocaleString('en-US')} commission hold${r.contactedBeforeCancel ? ' (⚠ contacted off-app first)' : ''}.`,
+      detail: `Job ${String(r.jobId).slice(-6)} (${r.trade}) — release the EGP ${((r.heldPst || 0) / 100).toLocaleString('en-US')} commission hold${r.contactedBeforeCancel ? ' (flagged — contacted off-app first)' : ''}.`,
       action: { kind: 'api', endpoint: '/admin/releases/approve', method: 'POST', body: { jobId: r.jobId }, label: 'Approve release' },
     });
   }
@@ -264,7 +264,7 @@ export async function computeBrain() {
       let risk = 0;
       if (w.strikes) { risk += w.strikes * 30; reasons.push(`${w.strikes} strike${w.strikes > 1 ? 's' : ''}`); }
       if (w.suspended) { risk += 40; reasons.push('suspended'); }
-      if (w.ratingAvg != null && (w.ratingCount || 0) >= 2 && w.ratingAvg < 3.5) { risk += (3.5 - w.ratingAvg) * 20; reasons.push(`low rating ${w.ratingAvg.toFixed(1)}★`); }
+      if (w.ratingAvg != null && (w.ratingCount || 0) >= 2 && w.ratingAvg < 3.5) { risk += (3.5 - w.ratingAvg) * 20; reasons.push(`low rating ${w.ratingAvg.toFixed(1)}/5`); }
       if ((w.debtPst || 0) > 0) { risk += Math.min(30, Math.round(w.debtPst / 1000)); reasons.push(`debt EGP ${(w.debtPst / 100).toLocaleString('en-US')}`); }
       return {
         id: w.id, name: w.name, trade: w.trade, zone: w.zone,

@@ -338,7 +338,7 @@ export async function rate(raterId: string, jobId: string, rateeId: string, star
     throw e;
   }
   await recomputeRatingFor(rateeId);
-  logEvent(raterId, 'job.rated', jobId, `${stars}★${comment ? ' · ' + comment : ''}`);
+  logEvent(raterId, 'job.rated', jobId, `${stars}/5${comment ? ' · ' + comment : ''}`);
   return { ok: true };
 }
 

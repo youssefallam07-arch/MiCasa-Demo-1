@@ -470,7 +470,7 @@ function jobCard(j){
   const [nm,icn]=SVC[j.svc]||[j.svc,'i-briefcase'];
   const mine=j.myBid;
   let action;
-  if(mine)action=`<button class="j-mybid" disabled>عرضك: ${fmt(mine.priceEgp)} ج · وصول ${mine.etaMin} د ✓</button>`;
+  if(mine)action=`<button class="j-mybid" disabled>عرضك: ${fmt(mine.priceEgp)} ج · وصول ${mine.etaMin} د ${ic('check','sm')}</button>`;
   else if(!j.canBid){
     const msg=j.blockReason==='probation_no_priority'?'الطلبات الطارئة للمعتمدين فقط':j.blockReason==='suspended'?'حسابك موقوف':j.blockReason==='not_vetted'?'حسابك تحت المراجعة':'رصيدك مش مكفي للعمولة — اشحن الأول';
     action=`<div class="j-blocked">${msg}</div>`;
@@ -531,7 +531,7 @@ function renderBidSheet(){
   const commEgp=P2E(Math.floor(bidPrice*100*(bidJob.priority?CFG.ratePriBp:CFG.rateStdBp)/10000));
   const w=$('bidWarn');
   if(W.availablePst>=commEgp*100||(W.mode==='postpaid'&&W.completedJobs<CFG.postpaidJobs)){
-    w.className='gate-warn ok';w.innerHTML=`لو العميل قبل عرضك، هيتحجز <b class="num">${fmt(commEgp)}</b> جنيه عمولة من رصيدك — رصيدك يغطيها ✓`;
+    w.className='gate-warn ok';w.innerHTML=`لو العميل قبل عرضك، هيتحجز <b class="num">${fmt(commEgp)}</b> جنيه عمولة من رصيدك — رصيدك يغطيها ${ic('check','sm')}`;
     $('bidSubmit').disabled=false;
   }else{
     w.className='gate-warn bad';w.innerHTML=`لو العميل قبل عرضك، هيتحجز <b class="num">${fmt(commEgp)}</b> جنيه عمولة — رصيدك مش مكفي، اشحن الأول.`;

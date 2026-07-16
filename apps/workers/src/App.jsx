@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Wrench, ClipboardList, Wallet as WalletIcon, User, Clock, Check, Star, Lock } from 'lucide-react';
 import { api, egp, toPst, getUser, setSession, clearSession } from './api.js';
 
 const TRADES = [['plumbing', 'سباكة'], ['electrical', 'كهرباء'], ['ac', 'تكييف'], ['carpentry', 'نجارة'], ['painting', 'دهانات'], ['appliance', 'أجهزة'], ['handyman', 'صنايعي']];
@@ -64,10 +65,10 @@ function Main({ user, onOut }) {
         {tab === 'profile' && <Profile profile={profile} />}
       </div>
       <div className="nav">
-        <button className={tab === 'feed' ? 'on' : ''} onClick={() => setTab('feed')}>🔧<span>شغل</span></button>
-        <button className={tab === 'jobs' ? 'on' : ''} onClick={() => setTab('jobs')}>📋<span>شغلي</span></button>
-        <button className={tab === 'wallet' ? 'on' : ''} onClick={() => setTab('wallet')}>👛<span>المحفظة</span></button>
-        <button className={tab === 'profile' ? 'on' : ''} onClick={() => setTab('profile')}>👤<span>حسابي</span></button>
+        <button className={tab === 'feed' ? 'on' : ''} onClick={() => setTab('feed')}><Wrench size={20} strokeWidth={1.5} /><span>شغل</span></button>
+        <button className={tab === 'jobs' ? 'on' : ''} onClick={() => setTab('jobs')}><ClipboardList size={20} strokeWidth={1.5} /><span>شغلي</span></button>
+        <button className={tab === 'wallet' ? 'on' : ''} onClick={() => setTab('wallet')}><WalletIcon size={20} strokeWidth={1.5} /><span>المحفظة</span></button>
+        <button className={tab === 'profile' ? 'on' : ''} onClick={() => setTab('profile')}><User size={20} strokeWidth={1.5} /><span>حسابي</span></button>
       </div>
     </>
   );
@@ -79,7 +80,7 @@ function Feed({ profile }) {
   const load = () => api('/worker/feed').then((r) => setJobs(r.jobs)).catch(() => {});
   useEffect(() => { load(); const t = setInterval(load, 4000); return () => clearInterval(t); }, []);
   if (profile && profile.verificationStatus !== 'approved')
-    return <div className="card"><div className="jt"><b>حسابك تحت المراجعة ⏳</b></div><div className="muted">لازم الإدارة توافق على حسابك قبل ما تستقبل شغل. راجع الإدارة أو استنى التفعيل.</div></div>;
+    return <div className="card"><div className="jt"><b>حسابك تحت المراجعة <Clock size={15} strokeWidth={1.5} style={{ verticalAlign: '-2px' }} /></b></div><div className="muted">لازم الإدارة توافق على حسابك قبل ما تستقبل شغل. راجع الإدارة أو استنى التفعيل.</div></div>;
   if (bidFor) return <BidSheet job={bidFor} close={() => { setBidFor(null); load(); }} />;
   return (
     <>
@@ -91,7 +92,7 @@ function Feed({ profile }) {
           <div className="muted" style={{ marginBottom: 8 }}>{j.description}</div>
           <div className="muted">عمولة المنصة لو اتقبلت: <span className="num">{egp(j.commissionPst)}</span> ج · {j.bidCount} عرض</div>
           <div style={{ marginTop: 12 }}>
-            {j.myBid ? <button className="btn sm ghost" disabled>عرضك: {egp(j.myBid.pricePst)} ج · {j.myBid.etaMin} د ✓</button>
+            {j.myBid ? <button className="btn sm ghost" disabled>عرضك: {egp(j.myBid.pricePst)} ج · {j.myBid.etaMin} د <Check size={14} strokeWidth={1.5} style={{ verticalAlign: '-2px' }} /></button>
               : j.canBid ? <button className="btn sm" onClick={() => setBidFor(j)}>قدّم عرضك</button>
                 : <div className="muted" style={{ color: 'var(--amber)' }}>{BLOCK_AR[j.blockReason] || 'مش متاح'}</div>}
           </div>
@@ -191,17 +192,17 @@ function Wallet({ wallet, reload }) {
 
 function Profile({ profile }) {
   if (!profile) return <div className="empty">تحميل…</div>;
-  const V = { pending: 'تحت المراجعة', interviewed: 'تم الإنترفيو', trial: 'شغلانة تجريبية', approved: 'معتمد ✅', rejected: 'مرفوض' };
+  const V = { pending: 'تحت المراجعة', interviewed: 'تم الإنترفيو', trial: 'شغلانة تجريبية', approved: 'معتمد', rejected: 'مرفوض' };
   return (
     <>
       <div className="sec">حسابي</div>
       <div className="card">
         <div className="jt"><b>{trAr(profile.trade)}</b><span className={'pill ' + (profile.verificationStatus === 'approved' ? 'completed' : 'accepted')}>{V[profile.verificationStatus]}</span></div>
         <div className="muted">المنطقة: {profile.zone}</div>
-        <div className="muted">التقييم: {profile.ratingCount ? '★ ' + (profile.ratingSum / profile.ratingCount).toFixed(1) : 'جديد'} · شغلانات: {profile.jobsCompleted}</div>
+        <div className="muted">التقييم: {profile.ratingCount ? <><Star size={13} strokeWidth={1.5} style={{ fill: 'currentColor', verticalAlign: '-1px' }} /> {(profile.ratingSum / profile.ratingCount).toFixed(1)}</> : 'جديد'} · شغلانات: {profile.jobsCompleted}</div>
         <div className="muted">النظام: {profile.walletMode === 'prepaid' ? 'رصيد مسبق' : 'فترة سماح'} · إنذارات: {profile.strikes}</div>
       </div>
-      <div className="card"><div className="jt"><b>🔒 رصيد الخدمة</b></div><div className="muted">العمولة بتتحجز من رصيدك لما العميل يقبل عرضك، وتتخصم لما تخلّص الشغلانة. من غير رصيد كافي مش هتقدر تقدم عروض.</div></div>
+      <div className="card"><div className="jt"><b><Lock size={15} strokeWidth={1.5} style={{ verticalAlign: '-2px' }} /> رصيد الخدمة</b></div><div className="muted">العمولة بتتحجز من رصيدك لما العميل يقبل عرضك، وتتخصم لما تخلّص الشغلانة. من غير رصيد كافي مش هتقدر تقدم عروض.</div></div>
     </>
   );
 }

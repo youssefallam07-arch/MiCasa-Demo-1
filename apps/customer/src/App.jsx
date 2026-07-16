@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ClipboardList, Plus, Star } from 'lucide-react';
 import { api, egp, toPst, getUser, setSession, clearSession } from './api.js';
 
 const TRADES = [['plumbing', 'سباكة'], ['electrical', 'كهرباء'], ['ac', 'تكييف'], ['carpentry', 'نجارة'], ['painting', 'دهانات'], ['appliance', 'أجهزة'], ['handyman', 'صنايعي']];
@@ -69,8 +70,8 @@ function Main({ user, onOut }) {
           </>)}
       </div>
       <div className="nav">
-        <button className={tab === 'jobs' ? 'on' : ''} onClick={() => setTab('jobs')}>📋<span>طلباتي</span></button>
-        <button className={tab === 'post' ? 'on' : ''} onClick={() => setTab('post')}>➕<span>اطلب خدمة</span></button>
+        <button className={tab === 'jobs' ? 'on' : ''} onClick={() => setTab('jobs')}><ClipboardList size={20} strokeWidth={1.5} /><span>طلباتي</span></button>
+        <button className={tab === 'post' ? 'on' : ''} onClick={() => setTab('post')}><Plus size={20} strokeWidth={1.5} /><span>اطلب خدمة</span></button>
       </div>
     </>
   );
@@ -148,7 +149,7 @@ function Bids({ job, back }) {
         {bids.length === 0 && <div className="empty">لسه مفيش عروض — استنى الصنايعية يقدّموا</div>}
         {bids.map((b) => (
           <div className="bidcard" key={b.id}>
-            <div className="jt"><b>{b.name}</b><span className="muted">{b.ratingAvg ? '★ ' + b.ratingAvg.toFixed(1) : 'جديد'} · {b.jobsCompleted} شغلانة</span></div>
+            <div className="jt"><b>{b.name}</b><span className="muted">{b.ratingAvg ? <><Star size={12} strokeWidth={1.5} style={{ fill: 'currentColor', verticalAlign: '-1px' }} /> {b.ratingAvg.toFixed(1)}</> : 'جديد'} · {b.jobsCompleted} شغلانة</span></div>
             <div className="muted" style={{ marginBottom: 10 }}>السعر <span className="money" style={{ color: 'var(--accent)' }}>{egp(b.pricePst)}</span> ج · وصول خلال {b.etaMin} دقيقة</div>
             <button className="btn sm green" onClick={() => accept(b.id)}>اقبل العرض</button>
           </div>
@@ -166,7 +167,7 @@ function Rate({ job, back }) {
       <div className="topbar"><button className="btn ghost sm" onClick={back}>رجوع</button><h1>قيّم الفني</h1></div>
       <div className="wrap"><div className="card">
         <div className="muted" style={{ textAlign: 'center' }}>{trAr(job.trade)} — {job.zone}</div>
-        <div className="stars">{[1, 2, 3, 4, 5].map((n) => <span key={n} className={stars >= n ? 'on' : ''} onClick={() => setStars(n)}>★</span>)}</div>
+        <div className="stars">{[1, 2, 3, 4, 5].map((n) => <span key={n} className={stars >= n ? 'on' : ''} onClick={() => setStars(n)}><Star size={26} strokeWidth={1.5} style={{ fill: stars >= n ? 'currentColor' : 'none' }} /></span>)}</div>
         <button className="btn gold" onClick={submit}>إرسال التقييم</button>
       </div></div>
     </>

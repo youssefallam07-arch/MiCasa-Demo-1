@@ -9,17 +9,17 @@ prepaid service-credit wallet. Built as a clean **Mainframe → Centcom → Apps
 
 ---
 
-## 🚀 Live demo — portal links
+## Live demo — portal links
 
 Always-on deployment: **https://micasa-demo-1.onrender.com**
 
 | Portal | Open | Who it's for |
 |---|---|---|
-| 🏠 **Launchpad** | **[micasa-demo-1.onrender.com](https://micasa-demo-1.onrender.com/)** | Menu to every app + demo logins |
-| 👤 **Customer app** | **[/customer](https://micasa-demo-1.onrender.com/customer/)** | Post jobs, view bids, accept, rate (Arabic) |
-| 🔧 **Workers app** | **[/workers](https://micasa-demo-1.onrender.com/workers/)** | Job feed, bidding, wallet & earnings (Arabic) |
-| 🛡️ **CIC — Admin ops** | **[/cic](https://micasa-demo-1.onrender.com/cic/)** | Verification, wallets, top-ups, releases, config |
-| 🎛️ **CENTCOM — Owner** | **[/centcom](https://micasa-demo-1.onrender.com/centcom/)** | Master terminal — every account, Open-as, Excel export |
+| **Launchpad** | **[micasa-demo-1.onrender.com](https://micasa-demo-1.onrender.com/)** | Menu to every app + demo logins |
+| **Customer app** | **[/customer](https://micasa-demo-1.onrender.com/customer/)** | Post jobs, view bids, accept, rate (Arabic) |
+| **Workers app** | **[/workers](https://micasa-demo-1.onrender.com/workers/)** | Job feed, bidding, wallet & earnings (Arabic) |
+| **CIC — Admin ops** | **[/cic](https://micasa-demo-1.onrender.com/cic/)** | Verification, wallets, top-ups, releases, config |
+| **CENTCOM — Owner** | **[/centcom](https://micasa-demo-1.onrender.com/centcom/)** | Master terminal — every account, Open-as, Excel export |
 
 **Demo logins** (also listed on the Launchpad):
 
@@ -33,7 +33,7 @@ Always-on deployment: **https://micasa-demo-1.onrender.com**
 > gitignored `docs/FIRST_LOGIN.md`; on Render it's the `ADMIN_PASSWORD` env var (or printed in the
 > service **Logs** on first boot).
 >
-> ⏳ **First open may take ~50s** — the free Render instance spins down when idle and cold-starts on
+> **First open may take ~50s** — the free Render instance spins down when idle and cold-starts on
 > the next request. Data resets on restart **unless** a persistent `DATABASE_URL` is set — one env var
 > switches the whole stack to Supabase Postgres for permanent 24/7 data ([`docs/DEPLOY_SUPABASE.md`](docs/DEPLOY_SUPABASE.md)).
 
@@ -51,11 +51,11 @@ Always-on deployment: **https://micasa-demo-1.onrender.com**
 
 | Surface | Folder | What it does |
 |---|---|---|
-| 👤 **Customer app** | `apps/customer` | Post a job, view bids, accept, confirm completion, rate. React PWA, Arabic RTL. |
-| 🔧 **Workers app** | `apps/workers` | Job feed (trade + zone), place bids, wallet & earnings, profile. React PWA, Arabic RTL, driver-style. |
-| 🛡️ **CIC (admin)** | `apps/cic` | *Control & Information Center* — dashboard, worker verification, wallets, top-up & release queues, config. |
-| 🌐 **Centcom** | `packages/centcom` | The **only** API gateway. Express + JWT, role-scoped routes, serves the built apps. |
-| 🧠 **Mainframe** | `packages/mainframe` | The core: Prisma/SQLite schema, all business logic, money, admin-editable config, seed. |
+| **Customer app** | `apps/customer` | Post a job, view bids, accept, confirm completion, rate. React PWA, Arabic RTL. |
+| **Workers app** | `apps/workers` | Job feed (trade + zone), place bids, wallet & earnings, profile. React PWA, Arabic RTL, driver-style. |
+| **CIC (admin)** | `apps/cic` | *Control & Information Center* — dashboard, worker verification, wallets, top-up & release queues, config. |
+| **Centcom** | `packages/centcom` | The **only** API gateway. Express + JWT, role-scoped routes, serves the built apps. |
+| **Mainframe** | `packages/mainframe` | The core: Prisma/SQLite schema, all business logic, money, admin-editable config, seed. |
 
 ## Architecture
 

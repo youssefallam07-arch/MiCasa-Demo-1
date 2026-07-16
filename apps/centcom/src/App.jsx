@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 import { api, egp, download, getUser, setSession, clearSession } from './api.js';
 
 export default function App() {
@@ -131,7 +132,7 @@ function Registry({ accounts, me, reload }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="act ghost" onClick={addModerator}>+ Moderator</button>
-          <button className="act" onClick={excel} disabled={dl}>{dl ? 'Building…' : '⬇ Excel'}</button>
+          <button className="act" onClick={excel} disabled={dl} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{dl ? 'Building…' : <><Download size={15} strokeWidth={1.5} />Excel</>}</button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>

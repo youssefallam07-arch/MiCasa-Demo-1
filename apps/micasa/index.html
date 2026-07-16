@@ -2009,7 +2009,7 @@ function startJobPoll(){
         const ta=$('trackAction');
         if(ta&&!document.getElementById('confirmDoneBtn')){
           $('etaLive')&&($('etaLive').textContent='Specialist marked the job done');
-          ta.innerHTML='<div class="mini" style="text-align:center;color:var(--gold);margin-bottom:8px">The specialist marked the job done. Confirm to finish & release the commission.</div><button id="confirmDoneBtn" class="cta" style="width:100%">✓ Confirm the job is done</button>';
+          ta.innerHTML='<div class="mini" style="text-align:center;color:var(--gold);margin-bottom:8px">The specialist marked the job done. Confirm to finish & release the commission.</div><button id="confirmDoneBtn" class="cta" style="width:100%">'+ic('check','sm')+' Confirm the job is done</button>';
           document.getElementById('confirmDoneBtn').onclick=confirmDone;
         }
       }else if(job.status==='completed'){S.activeJob.stage=4;renderTimeline();stopJobPoll()}

@@ -1,6 +1,6 @@
 // Offline export: write docs/registry.xlsx from the live database.
 //   npm run export:registry
-// (The CENTCOM app's "⬇ Excel" button produces the same workbook on demand.)
+// (The CENTCOM app's "Download registry Excel" button produces the same workbook on demand.)
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';

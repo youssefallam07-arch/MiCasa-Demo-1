@@ -184,8 +184,8 @@ function Brain({ brain, reload, setPage }) {
     if (a.kind === 'navigate') { setPage(a.page); return; }
     if (!window.confirm(`${a.label}?\n\n${rec.detail}`)) return;
     setBusy(rec.id);
-    try { const r = await api(a.endpoint, a.method || 'POST', a.body); setToast('✓ ' + a.label + ' — ' + (r.status || r.ok ? 'done' : JSON.stringify(r).slice(0, 60))); await reload(); }
-    catch (e) { setToast('✗ ' + (e.data?.error || 'failed')); }
+    try { const r = await api(a.endpoint, a.method || 'POST', a.body); setToast(a.label + ' — ' + (r.status || r.ok ? 'done' : JSON.stringify(r).slice(0, 60))); await reload(); }
+    catch (e) { setToast('Failed: ' + (e.data?.error || 'error')); }
     finally { setBusy(''); }
   }
   // Try the server's Casa AI (Claude) first; fall back to the local data-driven
