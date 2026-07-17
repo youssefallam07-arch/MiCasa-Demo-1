@@ -1,0 +1,442 @@
+<!doctype html><html><head><meta charset="utf-8"><title>MiCasa — Product Guide</title><style>
+  :root{--navy:#0f2540;--blue:#2f6bd6;--ink:#1c2430;--muted:#5a6675;--line:#e3e7ee;--bg:#ffffff;--soft:#f6f8fb;}
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.6;max-width:900px;margin:0 auto;padding:48px 40px;background:var(--bg);font-size:15px;}
+  h1{font-size:30px;color:var(--navy);border-bottom:3px solid var(--blue);padding-bottom:12px;margin:0 0 6px;}
+  h2{font-size:23px;color:var(--navy);margin-top:40px;padding-top:16px;border-top:1px solid var(--line);page-break-before:always;}
+  h1 + p, h2 + p{margin-top:6px;}
+  h3{font-size:18px;color:var(--blue);margin-top:26px;}
+  h2:first-of-type{page-break-before:avoid;}
+  p,li{color:var(--ink);}
+  em{color:var(--muted);}
+  blockquote{border-left:4px solid var(--blue);background:var(--soft);margin:16px 0;padding:10px 18px;color:#33414f;border-radius:0 6px 6px 0;}
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13.5px;page-break-inside:avoid;}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--navy);color:#fff;font-weight:600;}
+  tr:nth-child(even) td{background:var(--soft);}
+  code{background:#eef2f7;padding:1px 5px;border-radius:4px;font-size:13px;}
+  img{max-width:82%;max-height:8.6in;display:block;margin:16px auto;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 10px rgba(15,37,64,.10);page-break-inside:avoid;}
+  a{color:var(--blue);text-decoration:none;}
+  hr{border:none;border-top:1px solid var(--line);margin:28px 0;}
+  ul{padding-left:22px;}
+  @page{margin:14mm 12mm;}
+</style></head><body><h1>MiCasa — Product Guide</h1>
+<p><strong>A complete, business-facing walkthrough of the entire platform</strong></p>
+<p><em>Prepared for stakeholders and business reviewers. Every app, every screen, and what each option does — illustrated with live screenshots of the working software.</em></p>
+<hr>
+<h2>Table of contents</h2>
+<ol>
+<li><a href="#1-what-micasa-is-in-one-page">What MiCasa is (in one page)</a></li>
+<li><a href="#2-how-the-business-makes-money">How the business makes money</a></li>
+<li><a href="#3-the-four-surfaces-at-a-glance">The four surfaces at a glance</a></li>
+<li><a href="#4-the-customer-app">The Customer App</a> — <em>the demand side</em></li>
+<li><a href="#5-the-worker-app">The Worker App</a> — <em>the supply side (“sanaey3eya”)</em></li>
+<li><a href="#6-cic--the-operations-console">CIC — the Operations Console</a> — <em>run the marketplace day-to-day</em></li>
+<li><a href="#7-centcom--the-owner-terminal">CENTCOM — the Owner Terminal</a> — <em>own and govern the whole platform</em></li>
+<li><a href="#8-roles--permissions">Roles &amp; permissions</a></li>
+<li><a href="#9-business-rules-you-can-change-config">Business rules you can change (Config)</a></li>
+<li><a href="#10-reporting-data-export--audit">Reporting, data export &amp; audit</a></li>
+<li><a href="#11-whats-live-vs-whats-stubbed-roadmap">What’s live vs. what’s stubbed (roadmap)</a></li>
+<li><a href="#12-appendix--demo-logins">Appendix — demo logins</a></li>
+</ol>
+<hr>
+<h2>1. What MiCasa is (in one page)</h2>
+<p><strong>MiCasa is a two-sided home-services marketplace for Egypt.</strong> Households need a plumber, an electrician, an AC technician, a carpenter — MiCasa connects them with <strong>vetted tradespeople</strong> (in Egyptian Arabic, <em>sanaey3eya</em> / صنايعية) and lets those tradespeople <strong>compete for the job by bidding</strong>.</p>
+<p>The model is deliberately <strong>“reverse-auction / name-your-price,”</strong> the same shape that made ride-hailing apps like inDrive work:</p>
+<blockquote>
+<p>A customer describes the problem and states a budget → nearby specialists send competing offers (a price + an arrival time) → the customer picks the one they like → the specialist does the job → the customer pays the specialist <strong>in cash</strong>, confirms completion, and rates them.</p>
+</blockquote>
+<p><strong>The platform never touches the job payment.</strong> Customers pay workers directly. Instead, MiCasa earns a <strong>commission</strong> on every completed job, collected through a <strong>prepaid “service-credit” wallet</strong> that each worker tops up in advance. This is the single most important business idea in the product and is explained in the next section.</p>
+<p><strong>Why this design is attractive to operate:</strong></p>
+<ul>
+<li><strong>Cash-flow safe</strong> — because commission is <em>pre-funded</em> by the worker before they can even bid, the platform is never chasing unpaid fees.</li>
+<li><strong>Quality-controlled</strong> — workers are personally vetted (interview + guarantor + trial) before they can take jobs, and a strike system removes unreliable ones automatically.</li>
+<li><strong>Fully instrumented</strong> — every job, every bid, every pound of commission, and every admin action is recorded and exportable to Excel. An AI “Brain” console reads the live platform and answers plain-language questions.</li>
+</ul>
+<p>The whole product is built as four connected apps served from one place. Here is the front door — the <strong>Launchpad</strong> — which links to every app and lists the demo logins:</p>
+<p><img src="img/00-launchpad.png" alt="MiCasa Launchpad — the menu that links to every app, with demo logins"></p>
+<hr>
+<h2>2. How the business makes money</h2>
+<p>This is the commercial heart of MiCasa, so it’s worth stating precisely.</p>
+<h3>The commission</h3>
+<ul>
+<li>On every <strong>standard</strong> job, the platform’s commission is <strong>12%</strong> of the winning bid.</li>
+<li>On every <strong>priority / emergency</strong> job, the commission is <strong>17%</strong>.</li>
+<li>Both rates are <strong>not hard-coded</strong> — an administrator can change them at any time from the Config screen (see §9).</li>
+<li>The commission is calculated on the <strong>worker’s winning bid price</strong>, not the customer’s original budget.</li>
+</ul>
+<h3>The prepaid “service-credit” wallet</h3>
+<p>Every worker holds a <strong>prepaid credit balance</strong> with MiCasa. Think of it as a float the worker deposits in advance. It exists <strong>only</strong> to pay platform commissions — it is <strong>not</strong> the worker’s job earnings, and it is <strong>non-withdrawable</strong> (returned only if they close their account). The wallet has three buckets:</p>
+<table>
+<thead>
+<tr>
+<th>Bucket</th>
+<th>Arabic label</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Available</strong></td>
+<td>الرصيد المتاح</td>
+<td>Free credit the worker can spend right now on commissions. This is what lets them bid.</td>
+</tr>
+<tr>
+<td><strong>Held</strong></td>
+<td>محجوز عمولة</td>
+<td>Commission locked against jobs they’ve won but not yet finished. Not spendable; returned if the job is cancelled.</td>
+</tr>
+<tr>
+<td><strong>Debt / Owed</strong></td>
+<td>مستحق عليك</td>
+<td>A negative position that must be cleared before bidding again (legacy — see note below).</td>
+</tr>
+</tbody></table>
+<h3>The money flow: Hold → Capture → Release</h3>
+<p>MiCasa uses an escrow-style model so nobody can game the system:</p>
+<ol>
+<li><strong>HOLD</strong> — the moment a customer <strong>accepts</strong> a worker’s bid, the commission is <strong>held</strong> from the worker’s <em>available</em> credit (moved into <em>held</em>). The worker has now committed.</li>
+<li><strong>CAPTURE</strong> — when the job is <strong>completed</strong> (customer confirms, or automatically after 72 hours if they don’t), the held amount is <strong>captured</strong> and becomes <strong>platform revenue</strong>.</li>
+<li><strong>RELEASE</strong> — if the job is <strong>cancelled</strong> (and confirmed), the held commission is <strong>released</strong> straight back to the worker’s available credit.</li>
+</ol>
+<h3>Anti-fraud: prepaid-only bidding</h3>
+<p>A worker can only bid if their available credit already covers the commission. If they can’t cover it, they simply <strong>can’t bid</strong> on that job (the app tells them to top up first). This guarantees the platform’s fee is always funded <em>before</em> a job is taken — the worker can never take a job they can’t pay commission on.</p>
+<p><strong>Under the hood</strong> (for the technically curious): all money is stored as <strong>integer piasters</strong> (1 EGP = 100 piasters) to avoid rounding errors, and the hold/accept operation is a <strong>guarded atomic transaction</strong> — a worker’s wallet can never overdraw and a job can never be double-accepted, even if two people click at the same instant.</p>
+<blockquote>
+<p><strong>Legacy note:</strong> the system still carries a “postpaid grace period” concept (a new worker running their first few jobs on credit-debt). In the current live logic this path is switched off — everything is <strong>prepaid-only</strong>. The Config field still exists but doesn’t grant grace jobs today.</p>
+</blockquote>
+<h3>How the money is collected</h3>
+<p>Workers add credit through <strong>manual top-ups</strong> — they transfer money via <strong>Vodafone Cash</strong> or <strong>InstaPay</strong>, then an administrator confirms receipt and the credit appears. (A fully automated payment gateway is on the roadmap.)</p>
+<hr>
+<h2>3. The four surfaces at a glance</h2>
+<p>MiCasa is one platform with four distinct apps, each for a different audience. Everything is served from a single web address; the Launchpad above links to all of them.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Surface</th>
+<th>Who uses it</th>
+<th>What it’s for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>Customer App</strong></td>
+<td>Households</td>
+<td>Find or post a home-service job, receive bids, accept, track, pay cash, rate. Also a small <strong>marketplace</strong> to buy home hardware.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Worker App</strong></td>
+<td>Tradespeople (<em>sanaey3eya</em>)</td>
+<td>Go online, browse the job feed, bid (price + ETA), do the job, manage the prepaid wallet and earnings.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>CIC</strong> — <em>Control &amp; Information Center</em></td>
+<td>Operations staff / moderators</td>
+<td>Run the marketplace: vet workers, confirm top-ups, approve refunds, watch platform health via the AI “Brain.”</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>CENTCOM</strong></td>
+<td>The owner</td>
+<td>Govern the whole business: every account, impersonate any user, onboard workers, set commission rates, export all data.</td>
+</tr>
+</tbody></table>
+<p><strong>A simple way to remember the split:</strong> <strong>CIC runs the marketplace; CENTCOM owns and governs the whole platform</strong> (including CIC’s own staff accounts).</p>
+<p>Architecturally, the customer and worker apps never touch the database directly — they talk to a single secure gateway (internally called <em>Centcom</em>) which is the only component that holds the business logic and the money. This keeps the money safe and the system auditable.</p>
+<hr>
+<h2>4. The Customer App</h2>
+<p><em>The demand side. A polished, mobile-first app. Customers can either describe a problem in plain language and let the app find specialists, or browse 24 trade categories. It also includes a home-hardware marketplace, a loyalty-points wallet, and a “Home Health” maintenance tracker.</em></p>
+<h3>4.1 Signing in / creating an account</h3>
+<p>The customer signs in with an email/username and password, or taps <strong>Create Account</strong> to register (name, email, phone, password). Egyptian mobile numbers are validated, and passwords must be reasonably strong.</p>
+<p><img src="img/cust-01-login.png" alt="Customer login screen"></p>
+<h3>4.2 Home — the dashboard</h3>
+<p>After login the customer lands on a personalised home screen: a time-based greeting, and the two core choices — <strong>Find Services</strong> (book a tradesperson) and <strong>Buy Products</strong> (the marketplace). Notice the live <strong>petrol-index ticker</strong>: MiCasa’s suggested prices include a travel fee that recalibrates daily with fuel prices, which the app surfaces transparently. A row of trust stats (pros online, average rating, average response time) reinforces confidence.</p>
+<p><img src="img/cust-02-home.png" alt="Customer home screen — Find Services, Buy Products, live petrol/travel ticker, trust stats"></p>
+<p>Key elements on this screen:</p>
+<ul>
+<li><strong>Find Services</strong> card → opens the service finder (§4.3). Sub-label reminds the customer they get <em>“vetted specialists across 24 trades — name your price.”</em></li>
+<li><strong>Buy Products</strong> card → opens the MiCasa Market (§4.7).</li>
+<li><strong>Bell (top-right)</strong> → notifications (booking confirmations, order updates, maintenance reminders, price-drop alerts), with an unread badge.</li>
+<li><strong>Smart Picks</strong> — up to four AI-personalised suggestion tiles (e.g. an overdue home system, a seasonal “Summer AC tune-up,” or “book your usual trade again”).</li>
+<li><strong>Home Health card</strong> — a 0–100 score for the state of the customer’s home systems (see §4.9).</li>
+<li><strong>Petrol/travel ticker</strong> — today’s fuel index and per-km travel fee, with the daily change.</li>
+</ul>
+<h3>4.3 Find a Service — natural-language AI diagnosis</h3>
+<p>The customer can simply <strong>describe the problem</strong> (“the bathroom flush isn’t working and the AC won’t cool”) and the built-in <strong>Casa AI</strong> diagnoses it: it assigns a priority (Routine → Critical), detects the relevant trade(s) <strong>with a confidence level</strong>, gives an <strong>estimated cost range including parts</strong>, and even <strong>splits multiple issues</strong> into separate bookings. There are also one-tap “quick problem” chips, and the full grid of <strong>24 trades</strong> underneath.</p>
+<p><img src="img/cust-04-ai.png" alt="Casa AI diagnosis — detects two separate issues (Plumbing + AC), estimates cost, and offers to book each"></p>
+<p>The <strong>24 trades</strong> covered: Plumbing, Electrical, AC &amp; HVAC, Appliances, Carpentry, Painting, Cleaning, Pest Control, Gardening, Moving &amp; Freight, Locksmith, Glass &amp; Aluminum, Tiling &amp; Marble, Plaster &amp; Gypsum, Roofing &amp; Waterproofing, Satellite &amp; TV, IT &amp; Networks, CCTV &amp; Security, Car Mechanic, Welding &amp; Metal, Curtains &amp; Decor, Pumps &amp; Tanks, Elevator Tech, and Handyman.</p>
+<p><img src="img/cust-03-services.png" alt="Find a Service — quick-problem chips and the 24-trade category grid"></p>
+<h3>4.4 Nearby specialists — live map &amp; ranked list</h3>
+<p>Once a trade is chosen, the customer sees a <strong>live map</strong> of available specialists around their location (detected by GPS or a saved address), a <strong>supply-and-demand meter</strong> (Calm / Busy / Surge, with the current price multiplier and how many requests are open), and a <strong>ranked list</strong> of specialists they can sort by <strong>Nearest / Top rated / Best price</strong>. Each specialist card shows rating, jobs completed, distance, ETA, trust tags (“Same-day,” “10+ yrs exp,” “Own tools”), and a “from EGP …” estimate — plus occasional deal badges.</p>
+<p><img src="img/cust-05-specialists.png" alt="Nearby specialists — live Cairo map, surge meter, and ranked specialist cards"></p>
+<p>Tapping a specialist’s <strong>photo</strong> opens their full profile (stats, reviews, bio); tapping the <strong>card</strong> moves to the offer screen.</p>
+<h3>4.5 Set Your Offer — the “name your price” core</h3>
+<p>This is the signature screen. The customer sees a <strong>transparent fare breakdown</strong> — callout base, travel fee (indexed to today’s petrol price), and the supply/demand multiplier — leading to a <strong>suggested fair price</strong>. They can accept it or <strong>name their own price</strong> with the +/− stepper, guided by live hints (“Fair price — high acceptance odds,” “Very low — will decline”). Extras include a <strong>24-hour Smart-Schedule forecast</strong> that highlights the cheapest upcoming hour, an <strong>attach-a-photo</strong> option, an <strong>emergency-dispatch</strong> toggle (priority broadcast, +35% suggested), and a pay-with selector (cash / wallet / card).</p>
+<p><img src="img/cust-06-bid.png" alt="Set Your Offer — fare breakdown, smart-schedule forecast, and the name-your-price stepper"></p>
+<p>Pressing <strong>Broadcast Offer</strong> posts the job to the platform and opens the live offers screen, where incoming bids from specialists appear in real time; each is marked <em>“accepts your offer”</em> or <em>“counter-offer,”</em> and the customer can nudge the price up (+10 / +25) to attract faster responses, then <strong>Accept</strong> the one they want.</p>
+<p>After accepting, a <strong>live tracking</strong> screen shows a 5-stage timeline (accepted → en route → arrived → in progress → complete), a call button, and — once the specialist marks the job done — a <strong>“Confirm the job is done”</strong> button. Confirming completes the job (which is what captures the platform’s commission) and opens the <strong>rating</strong> screen (stars, quick tags, and an optional tip). The customer earns loyalty points on completion.</p>
+<h3>4.6 (Cancellation)</h3>
+<p>If the customer cancels before a specialist is assigned, it’s free and instant. If they cancel an accepted job, the specialist must confirm — and the held commission is released back to the specialist. “No charge within the first few minutes” is shown to the customer.</p>
+<h3>4.7 MiCasa Market — the hardware shop</h3>
+<p>Beyond services, the app has a small <strong>marketplace</strong> of home-hardware products from trusted local shops (electrical supplies, sanitary ware, tools &amp; paint). Customers search, browse by shop, view product detail (specs, warranty, stock), add to a cart, apply promo codes, choose a delivery address, and check out (cash / wallet / card). Delivery fees are petrol-indexed like the service travel fee.</p>
+<p><img src="img/cust-07-market.png" alt="MiCasa Market — local shops and home-hardware products"></p>
+<h3>4.8 Profile, wallet &amp; loyalty</h3>
+<p>The profile screen holds the customer’s account, a <strong>MiCasa Points</strong> loyalty balance (2% back on every job and order, redeemable for wallet credit), a <strong>MiCasa Wallet</strong> (top-up, transaction history, points redemption), saved <strong>payment methods</strong> (cash or Visa cards, validated on entry), saved <strong>addresses</strong> (with a map pin-picker), and a <strong>language switch</strong> (English / Arabic / French / Russian — the whole UI re-renders, RTL for Arabic).</p>
+<p><img src="img/cust-08-profile.png" alt="Customer profile — points, wallet, payment methods, addresses, language"></p>
+<p><img src="img/cust-10-wallet.png" alt="MiCasa Wallet — balance, top-up, redeem points, transactions"></p>
+<h3>4.9 Home Health — a retention feature</h3>
+<p>MiCasa quietly tracks the health of the customer’s home systems (AC, plumbing, electrical, pest, cleaning, water tank, appliances) based on completed jobs, gives an overall <strong>health score</strong>, and flags what’s <strong>due soon</strong> or <strong>overdue</strong> — each with a one-tap <strong>Book</strong> button. It’s a smart re-engagement engine that turns one-off jobs into recurring maintenance revenue.</p>
+<p><img src="img/cust-09-homehealth.png" alt="Home Health — per-system status with one-tap re-booking"></p>
+<hr>
+<h2>5. The Worker App</h2>
+<p><em>The supply side. An Arabic-first, inDrive-style app for tradespeople. The worker goes online, sees jobs in their trades and area, bids a price and arrival time, does the job, and manages a prepaid wallet. The latest version added multi-profession support and a richer profile.</em></p>
+<h3>5.1 Signing in</h3>
+<p>Workers sign in with a username and password. The app rejects customer accounts (“this is a customer account, not a worker”). New workers register with their name, phone, trade, and area — and are told up front that <strong>an administrator must approve their account before they can take work.</strong></p>
+<p><img src="img/wrk-01-login.png" alt="Worker login — “MiCasa صنايعي”"></p>
+<h3>5.2 The job feed — “شغل” (Work)</h3>
+<p>The worker toggles <strong>online</strong> to start receiving jobs. The header always shows their name, rating, verification status, and <strong>service-credit balance</strong> (with a <strong>top-up “اشحن”</strong> button). Because a worker can hold <strong>multiple professions</strong>, a row of filter chips lets them switch between trades (here: <em>All / Plumbing / AC</em>). Each job card shows the trade, area, the customer’s offered budget, the number of competing bids, and either a <strong>“Place your bid”</strong> button or — if the worker already bid — their submitted price and ETA.</p>
+<p><img src="img/wrk-02-feed.png" alt="Worker job feed — online toggle, service credit, multi-profession filters, and a live job card"></p>
+<p>If the worker isn’t approved yet, the feed is replaced by an <strong>“account under review”</strong> notice — no jobs and no bidding until an admin approves them. If their credit can’t cover a job’s commission, that job shows <strong>“top up first.”</strong></p>
+<h3>5.3 Placing a bid</h3>
+<p>Tapping <strong>“Place your bid”</strong> opens a sheet pre-filled with the customer’s offer. The worker sets their <strong>price</strong> (±10 EGP stepper) and <strong>arrival time</strong> (±5 min stepper). A live line shows exactly how much commission will be <strong>held</strong> from their credit if they win — and whether their balance covers it (green = you can bid; red = top up first). Submitting sends the offer; if the customer accepts, the commission is held and the job moves to the worker’s active work.</p>
+<p><img src="img/wrk-03-bidsheet.png" alt="Placing a bid — price and ETA steppers with a live commission-coverage check"></p>
+<p>Once a bid is accepted, the job appears under <strong>“your current work”</strong> with a call button and a <strong>“I finished the job”</strong> button. Marking it done captures the commission (the customer pays the worker in cash separately).</p>
+<h3>5.4 Wallet — prepaid service credit</h3>
+<p>The wallet screen shows the three buckets — <strong>available</strong>, <strong>held commission</strong>, and (if any) <strong>debt</strong> — with a clear disclaimer that the balance is for platform commission only and is non-withdrawable. A full <strong>transaction ledger</strong> lists every top-up, hold, capture, release, and adjustment.</p>
+<p><img src="img/wrk-04-wallet.png" alt="Worker wallet — available / held / debt, with the transaction ledger"></p>
+<p><strong>Topping up</strong> opens a sheet with preset amounts and a payment method (Vodafone Cash / InstaPay). The request is submitted with a reference number and waits for an administrator to confirm receipt before the credit lands.</p>
+<p><img src="img/wrk-05-topup.png" alt="Top-up sheet — preset amounts and Vodafone Cash / InstaPay"></p>
+<h3>5.5 Earnings — “الأرباح”</h3>
+<p>A simple record of completed jobs and total commission paid. (It tracks <em>commission paid</em>, not gross income, because the customer pays the worker in cash directly — the platform only ever sees the commission.)</p>
+<p><img src="img/wrk-06-earnings.png" alt="Earnings — completed jobs and commission paid"></p>
+<h3>5.6 Profile — the richer worker profile</h3>
+<p>The profile is where the “richer profile” work shows: a <strong>trust banner</strong> reflecting verification stage (under review → interviewed → trial → approved) and probation status, a <strong>reputation tier</strong> badge (New → Certified → Silver → Gold, earned through jobs and ratings), a <strong>bio</strong>, the worker’s <strong>professions</strong> (multi-select), their <strong>work zone</strong>, and a stats grid (rating, jobs finished, service credit, commission paid). A settings menu covers editing trades/zone, order-alert notifications, a “how it works” guide, and support contacts.</p>
+<p><img src="img/wrk-07-profile.png" alt="Worker profile — trust banner, tier badge, bio, multi-profession chips, and stats"></p>
+<p>Editing opens a sheet to <strong>pick multiple professions</strong>, choose a <strong>work zone</strong>, and write a <strong>bio</strong> — the multi-profession and richer-profile capability in action.</p>
+<p><img src="img/wrk-08-editprofile.png" alt="Edit profile — pick multiple trades, zone, and bio"></p>
+<h3>5.7 Reliability controls (behind the scenes)</h3>
+<p>If a worker cancels accepted jobs too often (more than the configured threshold within 30 days), they receive a <strong>strike</strong>; enough strikes <strong>auto-suspend</strong> them. This protects customers and keeps the marketplace reliable without manual policing.</p>
+<hr>
+<h2>6. CIC — the Operations Console</h2>
+<p><em>The “Control &amp; Information Center.” This is the day-to-day cockpit for operations staff: vetting workers, confirming top-ups, approving refunds, overriding stuck jobs, editing business rules — and an AI-powered intelligence layer that scores platform health and answers plain-language questions. Everything refreshes live every 5 seconds.</em></p>
+<p>CIC is organised as a left sidebar with ten sections. Nav items show a <strong>badge</strong> when something needs attention (e.g. workers awaiting verification).</p>
+<h3>6.1 The Brain — live intelligence &amp; Casa AI</h3>
+<p>The default landing screen. A <strong>health score (0–100)</strong> with four sub-scores — <strong>Coverage</strong> (are jobs drawing bids?), <strong>Trust</strong> (ratings &amp; worker standing), <strong>Liquidity</strong> (credit float vs debt), and <strong>Throughput</strong> (completed vs cancelled). Below it, four “lenses”:</p>
+<ul>
+<li><strong>SENSE</strong> — live vitals (jobs today, active jobs, open jobs, approved workers, money in escrow, commission today and over 7 days).</li>
+<li><strong>DIAGNOSE</strong> — an <strong>anomaly radar</strong> that auto-flags issues (open jobs with no bids, stalled escrow, verification backlog, top-ups awaiting confirmation, workers on quality watch…).</li>
+<li><strong>PREDICT</strong> — a <strong>demand-vs-supply table</strong> by trade and zone, highlighting where the platform is short of workers.</li>
+<li><strong>ACT</strong> — <strong>one-click recommendations</strong> on real actions (force-complete a stalled job, confirm a top-up, open the verification queue…).</li>
+</ul>
+<p>At the bottom, the <strong>Casa Brain</strong> console lets staff <strong>ask about the platform in plain language</strong> (“which zones need workers?”, “who’s high risk?”). When an AI key is configured, answers are generated by Claude reasoning over a live snapshot (badged <strong>“Casa AI”</strong>); otherwise a built-in engine answers from the same data. There are also focus tabs (Growth / Trust / Liquidity) that re-prioritise what surfaces first.</p>
+<p><img src="img/cic-02-brain.png" alt="CIC — The Brain: health score, SENSE/DIAGNOSE/PREDICT/ACT lenses, and the Casa AI console"></p>
+<h3>6.2 Dashboard</h3>
+<p>A top-line KPI board: jobs today, jobs total, average bids per job, completion rate, commission captured, worker count, pending releases, and workers awaiting vetting — plus a table of the most recent jobs.</p>
+<p><img src="img/cic-03-dashboard.png" alt="CIC Dashboard — headline KPIs and recent jobs"></p>
+<h3>6.3 Verification — the vetting queue</h3>
+<p>The founder-led vetting pipeline. Each applicant can be advanced through <strong>Interview → Trial → Approve</strong>, or <strong>Rejected</strong>. Only <strong>approved</strong> workers can bid and take jobs.</p>
+<p><img src="img/cic-04-verification.png" alt="CIC Verification — advance workers through interview, trial, approve, or reject"></p>
+<h3>6.4 Jobs — with admin overrides</h3>
+<p>A table of the latest jobs with trade, zone, urgency, budget, commission, bids, customer, and status. For jobs that get stuck (accepted / worker-done / cancel-pending), staff can <strong>Force-complete</strong> (captures the commission) or <strong>Force-cancel</strong> (releases it) — each requires a written reason that’s logged.</p>
+<p><img src="img/cic-05-jobs.png" alt="CIC Jobs — full job table with force-complete / force-cancel overrides"></p>
+<h3>6.5 Wallets — service credit oversight</h3>
+<p>Platform-wide totals (<strong>credit float</strong>, <strong>in escrow / held</strong>, <strong>outstanding debt</strong>, <strong>commission captured</strong>) and a per-worker table of every wallet: verification, wallet mode, available/held/debt, jobs completed, rating, and strikes.</p>
+<p><img src="img/cic-06-wallets.png" alt="CIC Wallets — platform credit totals and per-worker balances"></p>
+<h3>6.6 Top-ups — confirm received payments</h3>
+<p>The queue of workers who requested a top-up (paying via Vodafone Cash / InstaPay). Once the transfer is received, staff click <strong>Confirm received</strong> and the worker’s credit is added (settling any debt first).</p>
+<p><img src="img/cic-07-topups.png" alt="CIC Top-ups — confirm received transfers to credit workers"></p>
+<h3>6.7 Releases — approve cancellation refunds</h3>
+<p>When a worker cancels an accepted job, the held commission waits here for review before release. Crucially, the queue flags <strong>“contacted first — off-app risk”</strong> in red when a worker admits contacting the customer before cancelling (a sign they may be trying to take the job off-platform to dodge commission).</p>
+<p><img src="img/cic-08-releases.png" alt="CIC Releases — approve held-commission refunds, with an off-app fraud flag"></p>
+<h3>6.8 Config — the business rules</h3>
+<p>Every economic rule lives here and nothing is hard-coded (full table in §9): standard/priority commission %, minimum top-up, cancellation-strike thresholds, and more. Editing a value instantly changes marketplace economics.</p>
+<p><img src="img/cic-09-config.png" alt="CIC Config — live-editable commission rates and platform thresholds"></p>
+<h3>6.9 Data Log — the audit trail</h3>
+<p>Every meaningful change while the system is online — account created/deleted, worker verified/suspended, job completed/cancelled, config changed, top-up confirmed — with timestamp, actor, action, and detail. One click exports the whole thing to <strong>Excel</strong>.</p>
+<p><img src="img/cic-10-audit.png" alt="CIC Data Log — the full audit trail with Excel export"></p>
+<p><em>(A tenth section, <strong>Password</strong>, lets an admin change their own login.)</em></p>
+<hr>
+<h2>7. CENTCOM — the Owner Terminal</h2>
+<p><em>The owner’s master command center. Where CIC runs the marketplace, CENTCOM governs the whole business: it sees every account (customers, workers, and admins), can open any account’s app “as” that user, onboards workers personally, sets the platform’s rates and rules, controls who has admin access, and exports all data — including staff passwords — to Excel.</em></p>
+<p>CENTCOM auto-refreshes every 5 seconds and has a keyboard <strong>command palette (Ctrl/⌘-K)</strong> to jump anywhere. Its sidebar is grouped into <strong>People</strong>, <strong>Platform</strong>, and <strong>System</strong>.</p>
+<h3>7.1 Launchpad &amp; Command Deck</h3>
+<p>The <strong>Launchpad</strong> is a board that opens, copies, or shares every app in the platform (each with a live up/down status dot), plus a phone-friendly network address for demoing on a real device. The <strong>Command Deck</strong> is the executive dashboard — customers, workers, approved, pending, suspended, total commission revenue, money in escrow, and revenue today, with a 7-day commission chart and the active districts.</p>
+<p><img src="img/cc-02-launchpad.png" alt="CENTCOM Launchpad — open/copy/share every app, with live status"></p>
+<p><img src="img/cc-03-commanddeck.png" alt="CENTCOM Command Deck — the whole platform’s KPIs at a glance"></p>
+<h3>7.2 Customers — every customer account</h3>
+<p>A master list of every customer: contact details, verification, wallet balance, loyalty points, language, last seen. Per-row, the owner can <strong>Open as</strong> (see §7.6) or <strong>Set pw</strong> (generate a one-time password).</p>
+<p><img src="img/cc-04-customers.png" alt="CENTCOM Customers — the master customer registry"></p>
+<h3>7.3 Workers — every provider</h3>
+<p>Every tradesperson with their ID document, trade, verification status, rating, wallet mode, available/held/debt credit, jobs completed, and strikes. Per-row actions: <strong>Suspend / Unsuspend</strong>, <strong>Approve</strong>, <strong>Open as</strong>, and <strong>Set pw</strong>.</p>
+<p><img src="img/cc-05-workers.png" alt="CENTCOM Workers — every provider with vetting, credit, and ratings"></p>
+<h3>7.4 Onboard Worker — founder-led vetting</h3>
+<p>The owner recruits a tradesperson in person and registers them here: full name, phone, national ID, trade, a <strong>guarantor</strong> (name + phone), and an ID photo. An <strong>“approve immediately (I’ve vetted this worker in person)”</strong> checkbox creates them ready to work. The system generates their username and a one-time password.</p>
+<p><img src="img/cc-06-onboard.png" alt="CENTCOM Onboard Worker — personally vet and register a tradesperson"></p>
+<h3>7.5 Service Credit, Trust &amp; Liquidity</h3>
+<p><strong>Service Credit</strong> is the money control room — total captured, in escrow, credit float, outstanding debt — plus the same <strong>top-up confirmation</strong> and <strong>cancellation-release</strong> queues as CIC, in one place. <strong>Trust &amp; Liquidity</strong> combines the vetting pipeline, an “ops watchtower” of unmatched jobs (with a nudge action), and a <strong>district-expansion signal</strong> that surfaces customer demand in areas MiCasa hasn’t activated yet — a data-driven guide for where to expand.</p>
+<p><img src="img/cc-07-credit.png" alt="CENTCOM Service Credit — captured, escrow, float, debt, and the top-up/release queues"></p>
+<p><img src="img/cc-08-trust.png" alt="CENTCOM Trust &amp; Liquidity — vetting pipeline, unmatched-jobs watchtower, and expansion signals"></p>
+<h3>7.6 “Open as” — impersonate any account</h3>
+<p>One of CENTCOM’s most powerful support tools. The owner can <strong>open any account’s app exactly as that user</strong> — customer, worker, or admin — <strong>without knowing or resetting their password</strong>, to reproduce a complaint or verify what someone sees. It mints a <strong>short-lived (30-minute)</strong> session that carries the target’s own permissions (not owner superpowers) and records who launched it in the audit trail.</p>
+<h3>7.7 Config — the single source of truth</h3>
+<p>The owner’s master version of the rules table: standard/priority commission, minimum top-up, grace/probation settings, cancel thresholds, strikes, an earnings guarantee for an early cohort, minimum rating, and the list of <strong>active districts</strong> where bidding is live.</p>
+<p><img src="img/cc-09-config.png" alt="CENTCOM Config — every rate and threshold, live-editable"></p>
+<h3>7.8 Access Control &amp; Audit Log</h3>
+<p><strong>Access Control</strong> lists who can enter CENTCOM, lets the owner <strong>add administrators</strong> (moderators), change their own password, and <strong>download the full registry to Excel</strong> (including staff passwords — see §10). <strong>Audit Log</strong> is the oversight trail of every privileged action, newest first.</p>
+<p><img src="img/cc-10-access.png" alt="CENTCOM Access Control — manage admins and export the registry"></p>
+<p><img src="img/cc-11-audit.png" alt="CENTCOM Audit Log — every privileged action recorded"></p>
+<h3>7.9 The “classic” terminal (advanced tools)</h3>
+<p>A leaner, secondary CENTCOM (“Advanced Admin Tools”) is kept as a fallback for power operations — a unified registry of <strong>all</strong> accounts with role filters, <strong>Open-as</strong>, one-time password resets, permanent account <strong>deletion</strong> (the last admin can’t be deleted), and the Excel export. It duplicates functions already in the polished terminal above and is aimed at technical operators.</p>
+<hr>
+<h2>8. Roles &amp; permissions</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Can do</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Customer</strong></td>
+<td>Register/login; post jobs; view &amp; accept bids; track; confirm completion; cancel own jobs; rate the worker; use the marketplace, wallet, points, and Home Health.</td>
+</tr>
+<tr>
+<td><strong>Worker</strong></td>
+<td>Register/login (starts <em>pending</em>, must be approved); go online; browse the filtered feed; bid (if verified, funded, not suspended); mark jobs done; manage wallet &amp; top-ups; edit a multi-profession profile; rate the customer.</td>
+</tr>
+<tr>
+<td><strong>Admin (CIC)</strong></td>
+<td>Everything operational: dashboards &amp; the Brain; verify/suspend workers; confirm top-ups; approve releases; force-complete/cancel jobs; edit config; view wallets &amp; jobs; export data.</td>
+</tr>
+<tr>
+<td><strong>Owner (CENTCOM)</strong></td>
+<td>Everything: the full account registry; <strong>Open-as</strong> any user; onboard workers; one-time password resets; delete accounts; grant/revoke admin access; set rates &amp; rules; export all data including staff passwords.</td>
+</tr>
+</tbody></table>
+<p>A note on security: ordinary customer/worker passwords are stored only as one-way encrypted hashes and can never be read or exported. Only <strong>staff</strong> passwords that the owner sets are recorded (to a private, non-committed file) so the owner retains control of admin access.</p>
+<hr>
+<h2>9. Business rules you can change (Config)</h2>
+<p>Every rule below is editable from CIC or CENTCOM — no code change needed. Defaults shown.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it controls</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Standard commission</strong></td>
+<td>Platform fee on standard jobs</td>
+<td><strong>12%</strong></td>
+</tr>
+<tr>
+<td><strong>Priority commission</strong></td>
+<td>Platform fee on priority/emergency jobs</td>
+<td><strong>17%</strong></td>
+</tr>
+<tr>
+<td><strong>Minimum top-up</strong></td>
+<td>Smallest wallet top-up allowed</td>
+<td><strong>EGP 100</strong></td>
+</tr>
+<tr>
+<td><strong>Cancellations before a strike</strong></td>
+<td>Worker cancels within 30 days before a strike is applied</td>
+<td><strong>3</strong></td>
+</tr>
+<tr>
+<td><strong>Strikes before auto-suspend</strong></td>
+<td>Strikes accumulated before a worker is automatically suspended</td>
+<td><strong>3</strong></td>
+</tr>
+<tr>
+<td><strong>Auto-capture window</strong></td>
+<td>Hours after a worker marks a job done before commission is captured automatically if the customer never confirms</td>
+<td><strong>72h</strong></td>
+</tr>
+<tr>
+<td><strong>Postpaid grace jobs</strong> <em>(legacy)</em></td>
+<td>Jobs a new worker could run on credit before prepaid — currently inactive</td>
+<td><strong>3</strong></td>
+</tr>
+<tr>
+<td><strong>Active districts</strong></td>
+<td>The zones where bidding is live (e.g. Maadi, Nasr City, Zamalek, Heliopolis)</td>
+<td><em>configurable</em></td>
+</tr>
+</tbody></table>
+<p><em>(CENTCOM exposes a few additional early-stage levers — an earnings guarantee for the first cohort of workers, a probation-jobs count before priority bidding unlocks, and a minimum rating — for future growth experiments.)</em></p>
+<hr>
+<h2>10. Reporting, data export &amp; audit</h2>
+<ul>
+<li><strong>Excel export</strong> — one click from CIC (Data Log) or CENTCOM (Access Control) downloads a live workbook built fresh from the database, with sheets for: an <strong>Overview</strong> of KPIs, <strong>Customers</strong>, <strong>Workers</strong> (with wallet balances), <strong>Owners &amp; Moderators</strong> (with the staff passwords the owner set), <strong>Demo logins</strong>, and the full <strong>Audit Log</strong> (up to 5,000 events).</li>
+<li><strong>Audit trail</strong> — every privileged action (verifications, force-overrides, config changes, impersonations, password resets, deletions, top-up confirmations) is timestamped with the actor and details, viewable in both consoles and included in the export.</li>
+<li><strong>Live intelligence</strong> — the CIC Brain turns all of this into a health score, anomaly alerts, demand forecasts, and plain-language answers, so operators don’t have to read raw tables to know what needs attention.</li>
+</ul>
+<hr>
+<h2>11. What’s live vs. what’s stubbed (roadmap)</h2>
+<p><strong>Working end-to-end today:</strong> account creation &amp; login; posting jobs; bidding; accept → complete → confirm → rate; the full commission hold/capture/release money flow; prepaid wallets &amp; manual top-ups; worker vetting, strikes &amp; suspensions; admin overrides; the CIC Brain &amp; Casa AI; the CENTCOM owner tools; Excel export &amp; audit; the customer marketplace, points, and Home Health (client-side).</p>
+<p><strong>Deliberately stubbed / on the roadmap:</strong></p>
+<ul>
+<li><strong>Automated payment gateway</strong> (Vodafone Cash / InstaPay) — today top-ups are confirmed manually by an admin.</li>
+<li><strong>SMS / phone verification</strong> — today it’s username + password (the customer app has a simulated OTP flow ready to wire up).</li>
+<li><strong>Job photo upload &amp; storage</strong> — the data model supports it; the pipe isn’t connected.</li>
+<li><strong>Full production deployment</strong> at scale.</li>
+</ul>
+<p>The persistence layer already supports switching from the local demo database to a cloud database with a single setting, so the platform is ready to run always-on.</p>
+<hr>
+<h2>12. Appendix — demo logins</h2>
+<p>All demo passwords are <code>password123</code> (admin excepted — it’s generated per environment and kept private).</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Open in</th>
+<th>Username</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Customer</td>
+<td>Customer App</td>
+<td><code>mona</code></td>
+<td>Has existing jobs</td>
+</tr>
+<tr>
+<td>Customer</td>
+<td>Customer App</td>
+<td><code>khaled</code></td>
+<td>Has existing jobs</td>
+</tr>
+<tr>
+<td>Worker</td>
+<td>Worker App</td>
+<td><code>ahmed</code></td>
+<td>Approved · funded · can bid now (plumbing + AC)</td>
+</tr>
+<tr>
+<td>Worker</td>
+<td>Worker App</td>
+<td><code>mahmoud</code></td>
+<td>Approved · funded · can bid now (electrical + appliances)</td>
+</tr>
+<tr>
+<td>Worker</td>
+<td>Worker App</td>
+<td><code>saeed</code></td>
+<td>Pending — approve him in CIC to demo vetting</td>
+</tr>
+<tr>
+<td>Admin / Owner</td>
+<td>CIC &amp; CENTCOM</td>
+<td><code>youssef_hq</code></td>
+<td>Password kept private per environment</td>
+</tr>
+</tbody></table>
+<p><strong>Suggested demo loop:</strong> as <strong>mona</strong>, post a plumbing job in Maadi → as <strong>ahmed</strong>, bid on it → back to <strong>mona</strong>, accept → <strong>ahmed</strong> marks it done → <strong>mona</strong> confirms &amp; rates → watch it all update live in <strong>CIC</strong> and <strong>CENTCOM</strong>.</p>
+<hr>
+<p><em>This guide reflects the software as built and running. Screenshots are of the live application. Business rules (commission, thresholds, active districts) are configurable and may differ from the defaults shown here once tuned for launch.</em></p>
+</body></html>
