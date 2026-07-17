@@ -1862,8 +1862,13 @@ function renderRealOffer(b){
       <div class="wk-mid"><div class="nm">${esc(b.name)} <span class="vr">${ic('shield','sm')}</span></div>
         <div class="meta"><span class="rt">${ic('star','sm fill')} ${rating}</span><span>~${b.etaMin} min · ${b.jobsCompleted||0} jobs</span></div></div>
       <div class="o-price ${accepts?'':'counter'}"><b>EGP ${priceEgp}</b><span>${accepts?'ACCEPTS YOUR OFFER':'COUNTER-OFFER'}</span></div></div>
-    <div class="o-actions"><button class="o-decline" onclick="declineOffer('${id}')">Dismiss</button>
-      <button class="o-accept" onclick="acceptRealOffer('${b.id}',${JSON.stringify(esc(b.name))},${priceEgp},${b.etaMin},'${b.workerId}',${b.ratingAvg||0})">Accept — EGP ${priceEgp}</button></div>`;
+    <div class="o-actions"><button class="o-decline">Dismiss</button>
+      <button class="o-accept">Accept — EGP ${priceEgp}</button></div>`;
+  // Wire handlers in JS (closure over the bid) instead of injecting values into the
+  // onclick attribute — a stringified name would otherwise inject quotes that break
+  // the attribute and silently kill the click.
+  el.querySelector('.o-decline').onclick=()=>declineOffer(id);
+  el.querySelector('.o-accept').onclick=()=>acceptRealOffer(b.id,b.name,priceEgp,b.etaMin,b.workerId,b.ratingAvg||0);
   $('offersWrap').prepend(el);
   toast(accepts?'check':'message',(b.name||'').split(' ')[0]+' '+(accepts?'accepted your price':'made an offer'),!accepts);
 }
