@@ -296,13 +296,6 @@ input{font-family:inherit}
 .map-badge .gdot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 1.6s infinite}
 .map-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:1px}
 /* leaflet marker customs */
-.me-marker{position:relative}
-.me-marker .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.5);z-index:2}
-.me-marker .ring{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:2px solid var(--accent);animation:ringPulse 2s ease-out infinite}
-@keyframes ringPulse{from{transform:scale(.4);opacity:.85}to{transform:scale(1.5);opacity:0}}
-.wk-marker{position:relative;width:40px;height:40px}
-.wk-marker img{width:36px;height:36px;border-radius:50%;border:2.5px solid var(--accent);object-fit:cover;box-shadow:0 4px 14px rgba(0,0,0,.6)}
-.wk-marker.gold img{border-color:var(--gold)}
 .home-marker{color:var(--gold);filter:drop-shadow(0 4px 8px rgba(0,0,0,.7))}
 .van-marker{width:44px;height:44px;border-radius:50%;background:var(--accent-2);border:3px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 0 0 6px rgba(77,159,255,.22),0 8px 20px rgba(0,0,0,.5)}
 .leaflet-control-attribution{background:rgba(6,11,22,.7)!important;color:var(--dim)!important;font-size:8px!important}
@@ -322,24 +315,12 @@ input{font-family:inherit}
 .sd-nums{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--muted)}
 .sd-nums b{color:var(--text);font-weight:700}
 
-.sort-row{display:flex;gap:8px;padding:0 20px 13px}
-.sort-row button{
-  background:var(--card);border:1px solid var(--line);border-radius:30px;padding:9px 16px;
-  font-size:12px;color:var(--muted);font-weight:700;transition:all .2s;letter-spacing:.3px;
-}
-.sort-row button.on{background:var(--accent-2);color:#fff;border-color:var(--accent-2)}
-
-/* worker cards */
+/* specialist cards (live offers, active job) */
 .wk-card{
   margin:0 20px 12px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:15px;
   display:flex;gap:14px;align-items:center;transition:transform .16s;position:relative;overflow:hidden;width:calc(100% - 40px);text-align:left;
 }
 .wk-card:active{transform:scale(.977)}
-.wk-card.top-rated{border-color:rgba(217,179,106,.35)}
-.wk-card.top-rated::after{
-  content:'TOP PRO';position:absolute;top:0;right:0;font-size:8.5px;font-weight:800;letter-spacing:1.5px;
-  background:linear-gradient(90deg,var(--gold),var(--gold-2));color:#1A1204;padding:5px 13px;border-radius:0 0 0 12px;
-}
 .avatar{
   width:54px;height:54px;border-radius:18px;display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:17px;color:#fff;flex-shrink:0;position:relative;overflow:visible;
@@ -353,13 +334,6 @@ input{font-family:inherit}
 .wk-mid .nm .vr{color:var(--accent);display:flex}
 .wk-mid .meta{font-size:11.5px;color:var(--muted);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .wk-mid .meta .rt{color:var(--gold);font-weight:700;display:flex;align-items:center;gap:3px}
-.wk-tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.wk-tags span{font-size:9.5px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:20px;padding:3.5px 9px;color:var(--muted);font-weight:600;letter-spacing:.3px}
-.wk-right{text-align:right;flex-shrink:0}
-.wk-right .dist{font-size:13px;font-weight:800;color:var(--accent);font-family:var(--font-d)}
-.wk-right .eta{font-size:10.5px;color:var(--muted);margin-top:2px}
-.wk-right .from{font-size:10px;color:var(--dim);margin-top:9px;letter-spacing:.5px;text-transform:uppercase}
-.wk-right .prc{font-size:14px;font-weight:800;font-family:var(--font-d)}
 
 /* ============================================================
    BIDDING
@@ -734,7 +708,6 @@ input{font-family:inherit}
 /* RTL adjustments */
 [dir=rtl] .back-btn svg{transform:scaleX(-1)}
 [dir=rtl] .mode-card,[dir=rtl] .wk-card{text-align:right}
-[dir=rtl] .wk-right{text-align:left}
 [dir=rtl] .mode-card .bigicon{right:auto;left:24px}
 [dir=rtl] .mode-card .go{right:auto;left:24px}
 [dir=rtl] .topbar h2{text-align:right}
@@ -780,10 +753,6 @@ input{font-family:inherit}
 .aiq-chips button{background:rgba(255,255,255,.05);border:1px solid var(--line-2);border-radius:24px;padding:8px 16px;font-size:12px;font-weight:700;color:var(--text);transition:all .15s}
 .aiq-chips button:active{background:var(--accent-2);transform:scale(.94)}
 .multi-tag{font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--gold);margin-bottom:6px}
-/* deal badges */
-.deal-chip{font-size:8.5px;font-weight:800;letter-spacing:.8px;padding:3px 8px;border-radius:16px;margin-top:6px;display:inline-block}
-.deal-chip.great{background:rgba(61,214,140,.12);color:var(--green)}
-.deal-chip.fast{background:rgba(77,159,255,.12);color:var(--accent)}
 /* forecast */
 .fc-card{margin:0 20px 14px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px}
 .fc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -803,20 +772,11 @@ input{font-family:inherit}
 .photo-row .ph-tx{flex:1;font-size:12.5px;font-weight:700}
 .photo-row .ph-tx span{display:block;font-size:10.5px;color:var(--muted);font-weight:500;margin-top:2px}
 .photo-row img{width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid var(--line-2)}
-/* worker profile sheet */
+/* specialist header (rating sheet) */
 .wp-head{display:flex;align-items:center;gap:15px;padding:4px 22px 14px}
 .wp-head .wp-tx{flex:1}
 .wp-head .wp-tx b{font-size:17px;font-family:var(--font-d);font-weight:600;display:flex;align-items:center;gap:7px}
 .wp-head .wp-tx span{font-size:11.5px;color:var(--muted)}
-.wp-stats{display:flex;gap:9px;padding:0 22px 14px}
-.wp-stats .st{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 6px;text-align:center}
-.wp-stats .st b{display:block;font-size:14.5px;font-family:var(--font-d);font-weight:700}
-.wp-stats .st span{font-size:8.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:700;display:block;margin-top:3px}
-.wp-bio{padding:0 24px 14px;font-size:12.5px;color:var(--muted);line-height:1.6}
-.rev{margin:0 22px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
-.rev .rv-top{display:flex;justify-content:space-between;font-size:12px;font-weight:700}
-.rev .rv-top .stars{color:var(--gold)}
-.rev p{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}
 /* chat */
 #chatBody{display:flex;flex-direction:column;gap:9px;padding:6px 18px 12px;min-height:220px;max-height:46vh;overflow-y:auto}
 .msg{max-width:78%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.45;animation:popIn .3s both}
@@ -1116,11 +1076,11 @@ input{font-family:inherit}
       </div>
     </div>
 
-    <!-- NEARBY -->
-    <div class="screen" id="scr-workers">
+    <!-- BID -->
+    <div class="screen" id="scr-bid">
       <div class="topbar">
         <button class="back-btn" onclick="nav('scr-services',true)"><svg class="ic sm"><use href="#i-arrow-l"/></svg></button>
-        <h2 id="wkTitle">Nearby Specialists<span class="sub" id="wkSub"></span></h2>
+        <h2>Set Your Offer<span class="sub" id="bidSub"></span></h2>
       </div>
       <div class="scroll">
         <div id="locCard">
@@ -1129,28 +1089,7 @@ input{font-family:inherit}
           <button class="loc-btn" id="gpsBtn" onclick="requestLocation(true)">GPS</button>
           <button class="loc-btn" id="savedLocBtn" onclick="openAddrSheet(true)" style="background:rgba(217,179,106,.1);color:var(--gold)">SAVED</button>
         </div>
-        <div class="map-shell" id="nearbyMapShell">
-          <div id="nearbyMap" style="width:100%;height:100%"></div>
-          <div class="map-badge"><span class="gdot"></span><span id="mapCount"></span></div>
-        </div>
         <div class="sd-card" id="sdCard"></div>
-        <div class="sort-row" id="sortRow">
-          <button class="on" data-s="dist" onclick="setSort('dist',this)">Nearest</button>
-          <button data-s="rate" onclick="setSort('rate',this)">Top rated</button>
-          <button data-s="price" onclick="setSort('price',this)">Best price</button>
-        </div>
-        <div id="wkList"></div>
-      </div>
-    </div>
-
-    <!-- BID -->
-    <div class="screen" id="scr-bid">
-      <div class="topbar">
-        <button class="back-btn" onclick="nav('scr-workers',true)"><svg class="ic sm"><use href="#i-arrow-l"/></svg></button>
-        <h2>Set Your Offer<span class="sub" id="bidSub"></span></h2>
-      </div>
-      <div class="scroll">
-        <div id="bidWorkerCard"></div>
         <div class="fare-card" id="fareCard"></div>
         <div class="fc-card" id="fcCard"></div>
         <button class="photo-row" onclick="document.getElementById('jobPhotoInput').click()">
@@ -1325,11 +1264,6 @@ input{font-family:inherit}
       <div class="sh-body" id="langBody"></div>
     </div>
     <!-- v1.2 sheets -->
-    <div class="sheet" id="workerSheet">
-      <div class="grab"></div>
-      <div class="sh-head"><h3 id="workerSheetH">Specialist</h3><button onclick="closeSheets()" style="color:var(--muted);display:flex"><svg class="ic"><use href="#i-x"/></svg></button></div>
-      <div class="sh-body" id="workerBody"></div>
-    </div>
     <div class="sheet" id="chatSheet">
       <div class="grab"></div>
       <div class="sh-head"><h3 id="chatSheetH">Chat</h3><button onclick="closeSheets()" style="color:var(--muted);display:flex"><svg class="ic"><use href="#i-x"/></svg></button></div>
@@ -1479,40 +1413,8 @@ const PRODUCTS=[
 function shopOf(id){return SHOPS.find(s=>s.id===id)}
 
 /* ---------- specialists ---------- */
-const FIRST=['Ahmed','Mohamed','Mahmoud','Omar','Karim','Hassan','Mostafa','Youssef','Tarek','Khaled','Amr','Sherif','Hany','Waleed','Samir','Ibrahim','Ali','Hussein'];
-const LAST=['El-Sayed','Abdelrahman','Farouk','Ezzat','Ramadan','Salah','Fathy','Nabil','Gamal','Mansour','Shawky','Zaki','Hegazy','Ismail'];
-const AREAS=['Maadi','Zamalek','Nasr City','Heliopolis','New Cairo','Dokki','Mohandessin','6th of October','Sheikh Zayed','Garden City','Shubra','Rehab'];
+// Avatar colours for real specialists returned by the API (bids, active job).
 const AV_COLORS=['linear-gradient(135deg,#2563EB,#4D9FFF)','linear-gradient(135deg,#B98F3E,#D9B36A)','linear-gradient(135deg,#134E4A,#2DD4BF)','linear-gradient(135deg,#4C1D95,#8B5CF6)','linear-gradient(135deg,#7F1D1D,#F16063)'];
-const TAGPOOL=['10+ yrs exp','Same-day','30-day warranty','Own tools','Speaks EN','Invoice provided','Top 5%','Fast responder'];
-function genWorkers(svc){
-  const r=seededRand(hash('wk'+svc.id+todayKey));
-  const n=6+Math.floor(r()*5);
-  const out=[];
-  for(let i=0;i<n;i++){
-    const nm=FIRST[Math.floor(r()*FIRST.length)]+' '+LAST[Math.floor(r()*LAST.length)];
-    const dist=+(0.4+r()*7.4).toFixed(1);
-    out.push({
-      id:svc.id+'-'+i,nm,dist,
-      rate:+(4.2+r()*0.79).toFixed(2),
-      jobs:40+Math.floor(r()*1400),
-      pf:0.82+r()*0.4,
-      ang:r()*Math.PI*2,
-      area:AREAS[Math.floor(r()*AREAS.length)],
-      col:AV_COLORS[Math.floor(r()*AV_COLORS.length)],
-      photo:`https://randomuser.me/api/portraits/men/${hash(svc.id+nm+i)%99}.jpg`,
-      eta:Math.max(6,Math.round(dist*4+r()*10)),
-      busy:r()<0.22,verified:r()<0.75,
-      tags:[...TAGPOOL].sort(()=>r()-.5).slice(0,2+Math.floor(r()*2)),
-      thresh:0
-    });
-  }
-  return out;
-}
-function wkPos(w){ // lat/lng offset from user
-  const lat=S.loc.lat+Math.cos(w.ang)*w.dist/110;
-  const lng=S.loc.lng+Math.sin(w.ang)*w.dist/(110*Math.cos(S.loc.lat*Math.PI/180));
-  return [lat,lng];
-}
 function avatarHTML(w,size){
   const init=w.nm.split(' ').map(x=>x[0]).join('');
   const st=size?`width:${size}px;height:${size}px;font-size:${Math.round(size*.3)}px;`:'';
@@ -1523,8 +1425,8 @@ function avatarHTML(w,size){
    STATE + NAV
    ============================================================ */
 const S={
-  screen:'scr-mode',svc:null,workers:[],sort:'dist',worker:null,
-  bid:0,suggested:0,urgent:false,distUsed:0,sd:null,
+  screen:'scr-mode',svc:null,
+  bid:0,suggested:0,urgent:false,sd:null,
   offerTimers:[],activity:[],cart:{},loc:null,locName:'Cairo, Egypt',
   points:340,activeJob:null,trackTimer:null,
   lang:localStorage.getItem('micasa_lang')||'en',pay:'cash',accuracy:null
@@ -1536,10 +1438,9 @@ function nav(id,back){
   const nx=$(id);nx.classList.add('active');if(back)nx.classList.add('back');
   S.screen=id;
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.scr===id));
-  const deep=['scr-bid','scr-offers','scr-track','scr-workers','scr-auth'].includes(id);
+  const deep=['scr-bid','scr-offers','scr-track','scr-auth'].includes(id);
   $('bottomNav').classList.toggle('hide',deep);
   $('cartFab').classList.toggle('show',id==='scr-shop'&&cartCount()>0);
-  if(id==='scr-workers'&&nearbyMap)setTimeout(()=>nearbyMap.invalidateSize(),80);
   if(id==='scr-track'&&trackMap)setTimeout(()=>trackMap.invalidateSize(),80);
 }
 function navTab(id){nav(id)}
@@ -1636,7 +1537,7 @@ function aiAnswer(yes){AI2.answered=yes;AI2.esc=!!yes;runAI(AI2.q,true)}
 /* ============================================================
    LOCATION + MAPS
    ============================================================ */
-let nearbyMap=null,nearbyMarkers=[],trackMap=null,trackLayers=[];
+let trackMap=null,trackLayers=[];
 const HAS_MAPS=typeof L!=='undefined';
 const DARK_TILES='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_ATTR='&copy; OpenStreetMap &copy; CARTO';
@@ -1653,7 +1554,7 @@ function requestLocation(manual){
     $('locCoords').textContent=lat.toFixed(5)+', '+lng.toFixed(5)+(acc?' · ±'+Math.round(acc)+' m':'');
     $('svcLocSub').textContent=nm;
     if(manual)toast('pin',t('locSet')+' '+nm);
-    if(S.svc){renderNearbyMap();renderWorkers()}
+    refreshBidZone();
   };
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
@@ -1663,39 +1564,14 @@ function requestLocation(manual){
     );
   }else set(30.0444,31.2357,null,'Cairo, Egypt');
 }
-function meIcon(){return L.divIcon({className:'',html:'<div class="me-marker"><span class="ring"></span><span class="core"></span></div>',iconSize:[46,46],iconAnchor:[23,23]})}
-function renderNearbyMap(){
-  if(!HAS_MAPS){$('nearbyMapShell').innerHTML='<div class="map-fallback">MAP UNAVAILABLE OFFLINE</div>';return}
-  if(!S.loc)return;
-  if(!nearbyMap){
-    nearbyMap=L.map('nearbyMap',{zoomControl:false,scrollWheelZoom:false});
-    L.tileLayer(DARK_TILES,{maxZoom:19,attribution:TILE_ATTR}).addTo(nearbyMap);
-  }
-  nearbyMap.setView([S.loc.lat,S.loc.lng],12.5);
-  nearbyMarkers.forEach(m=>m.remove());nearbyMarkers=[];
-  nearbyMarkers.push(L.marker([S.loc.lat,S.loc.lng],{icon:meIcon(),zIndexOffset:900}).addTo(nearbyMap));
-  if(S.accuracy)nearbyMarkers.push(L.circle([S.loc.lat,S.loc.lng],{radius:S.accuracy,color:'#4D9FFF',weight:1,opacity:.5,fillColor:'#4D9FFF',fillOpacity:.07}).addTo(nearbyMap));
-  S.workers.forEach(w=>{
-    const el=L.divIcon({className:'',html:`<div class="wk-marker ${w.rate>=4.85?'gold':''}"><img src="${w.photo}" onerror="this.parentNode.style.background='${w.col.split(',')[1]||'#2563EB'}'"></div>`,iconSize:[40,40],iconAnchor:[20,20]});
-    nearbyMarkers.push(L.marker(wkPos(w),{icon:el}).addTo(nearbyMap));
-  });
-  setTimeout(()=>nearbyMap.invalidateSize(),80);
-}
-
 /* ============================================================
-   WORKERS
+   BID CONTEXT
    ============================================================ */
 function pickService(id,urgent){
   S.svc=SERVICES.find(s=>s.id===id);
   S.urgent=!!urgent;
-  S.workers=genWorkers(S.svc);
   S.sd=supplyDemand(id);
-  nav('scr-workers');
-  $('wkTitle').firstChild.textContent=svcName(S.svc);
-  $('wkSub').textContent=S.workers.length+' specialists within 8 km';
-  $('mapCount').textContent=S.workers.filter(w=>!w.busy).length+' available now';
-  if(!S.loc)requestLocation(false);else{$('locName').textContent=S.locName;renderNearbyMap()}
-  renderSD();renderWorkers();
+  openBidScreen();
   if(S.sd.mult>=1.3){
     $('surgeStrip').style.display='flex';
     $('surgeTx').innerHTML=`<b>High demand</b> for ${S.svc.nm.toLowerCase()} right now — prices are ~${Math.round((S.sd.mult-1)*100)}% above baseline. Mornings are usually cheaper.`;
@@ -1711,51 +1587,28 @@ function renderSD(){
     <div class="sd-nums"><span><b>${supply}</b> online</span><span>price <b>×${mult.toFixed(2)}</b></span><span><b>${demand}</b> open requests</span></div>`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{$('sdBar').style.width=Math.min(100,(mult-0.85)/1.05*100)+'%'}));
 }
-function setSort(s,btn){
-  S.sort=s;
-  document.querySelectorAll('#sortRow button').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');renderWorkers();
+function renderSD(){
+  const {supply,demand,mult}=S.sd;
+  const lvl=mult<1.1?'low':mult<1.35?'mid':'high';
+  const lbl=lvl==='low'?'CALM — GOOD PRICES':lvl==='mid'?'BUSY — NORMAL RATES':'SURGE — HIGH DEMAND';
+  $('sdCard').innerHTML=`
+    <div class="sd-head"><b>Supply &amp; demand</b><span class="sd-badge ${lvl}">${lbl}</span></div>
+    <div class="sd-meter"><i id="sdBar"></i></div>
+    <div class="sd-nums"><span><b>${supply}</b> online</span><span>price <b>×${mult.toFixed(2)}</b></span><span><b>${demand}</b> open requests</span></div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{$('sdBar').style.width=Math.min(100,(mult-0.85)/1.05*100)+'%'}));
 }
-function estFor(w){return Math.round((S.svc.base*w.pf+PER_KM*w.dist)*S.sd.mult/5)*5}
-function renderWorkers(){
-  const list=[...S.workers].sort((a,b)=>
-    S.sort==='dist'?a.dist-b.dist:S.sort==='rate'?b.rate-a.rate:estFor(a)-estFor(b));
-  const avg=list.reduce((a,w)=>a+estFor(w),0)/Math.max(list.length,1);
-  $('wkList').innerHTML=list.map((w,i)=>`
-    <button class="wk-card pop ${w.rate>=4.85?'top-rated':''}" style="animation-delay:${i*.05}s" onclick="pickWorker('${w.id}')">
-      <span onclick="event.stopPropagation();openWorkerSheet('${w.id}')">${avatarHTML(w)}</span>
-      <div class="wk-mid">
-        <div class="nm">${w.nm} ${w.verified?`<span class="vr">${ic('shield','sm')}</span>`:''}</div>
-        <div class="meta"><span class="rt">${ic('star','sm fill')} ${w.rate}</span><span>${w.jobs} jobs</span><span>${w.area}</span></div>
-        <div class="wk-tags">${w.tags.map(t=>`<span>${t}</span>`).join('')}</div>
-        <div>${dealChips(w,avg)}</div>
-      </div>
-      <div class="wk-right">
-        <div class="dist">${w.dist} km</div>
-        <div class="eta">~${w.eta} min away</div>
-        <div class="from">From</div>
-        <div class="prc">EGP ${estFor(w)}</div>
-      </div>
-    </button>`).join('');
-}
-
 /* ============================================================
    BIDDING
    ============================================================ */
-function pickWorker(id){
-  S.worker=S.workers.find(w=>w.id===id);
-  const w=S.worker;
-  S.distUsed=w.dist;
-  w.thresh=0;
+// The customer announces a price and every eligible specialist in the zone sees
+// it — there is no "pick a specialist first" step. Whoever responds is a real
+// bid from the API, so the only thing this screen needs is the market context
+// used to justify a suggested price.
+function openBidScreen(){
   nav('scr-bid');
-  $('bidSub').textContent=S.svc.nm+' · '+w.nm;
-  $('bidWorkerCard').innerHTML=`
-    <div class="wk-card" style="margin-top:4px">
-      ${avatarHTML(w)}
-      <div class="wk-mid">
-        <div class="nm">${w.nm} ${w.verified?`<span class="vr">${ic('shield','sm')}</span>`:''}</div>
-        <div class="meta"><span class="rt">${ic('star','sm fill')} ${w.rate}</span><span>${w.jobs} jobs</span><span>${w.dist} km · ~${w.eta} min</span></div>
-      </div></div>`;
+  $('bidSub').textContent=svcName(S.svc)+' · '+custZone();
+  if(!S.loc)requestLocation(false);else $('locName').textContent=S.locName;
+  renderSD();
   $('urgentTgl').classList.toggle('on',S.urgent);
   S.schedHour=null;S.jobPhoto=null;
   const th=$('photoThumb');if(th){th.style.display='none'}
@@ -1765,9 +1618,19 @@ function pickWorker(id){
   renderForecast();
   $('bcastLbl').textContent=t('bcast');
 }
+// Location changed while the offer screen is open. The suggested price no longer
+// depends on the customer's exact position, so only relabel the zone — never
+// re-run renderFare(), which would reset an offer the customer has already tuned.
+function refreshBidZone(){
+  if(S.svc&&S.screen==='scr-bid')$('bidSub').textContent=svcName(S.svc)+' · '+custZone();
+}
+// With no specialist chosen up front there is no known travel distance, so the
+// suggested price is the market baseline plus travel over a typical in-zone
+// dispatch radius. It is only a suggestion — the customer sets the real number.
+const TYPICAL_KM=4;
 function fareParts(){
-  const callout=Math.round(S.svc.base*S.worker.pf);
-  const travel=Math.round(PER_KM*S.distUsed);
+  const callout=S.svc.base;
+  const travel=Math.round(PER_KM*TYPICAL_KM);
   const sdm=(S.schedHour!=null)?sdFor(S.svc.id,S.schedHour).mult:S.sd.mult;
   const mult=sdm*(S.urgent?1.35:1);
   const total=Math.round((callout+travel)*mult/5)*5;
@@ -1778,7 +1641,7 @@ function renderFare(){
   S.suggested=f.total;
   $('fareCard').innerHTML=`
     <div class="fare-row"><span>${S.svc.nm} callout base</span><b>EGP ${f.callout}</b></div>
-    <div class="fare-row"><span>Travel — ${S.distUsed} km × ${PER_KM.toFixed(2)} EGP/km</span><b>EGP ${f.travel}</b></div>
+    <div class="fare-row"><span>Travel — typical ${TYPICAL_KM} km × ${PER_KM.toFixed(2)} EGP/km</span><b>EGP ${f.travel}</b></div>
     <div class="fare-row"><span>Supply/demand${S.urgent?' + emergency':''}<span class="mult-chip ${f.mult>=1?'up':'down'}">×${f.mult.toFixed(2)}</span></span><b></b></div>
     <div class="fare-row total"><span>Suggested fair price</span><b>EGP ${f.total}</b></div>
     <div class="fare-note">Travel fee tracks <b>today's petrol (${petrolToday.toFixed(2)} EGP/L)</b> and recalibrates daily. The multiplier reflects <b>${S.sd.demand} open requests vs ${S.sd.supply} specialists</b> online. Parts and materials are quoted on-site.</div>
@@ -1898,81 +1761,14 @@ function custZone(){
   const hit=known.find(z=>txt.includes(z));
   return hit||'Cairo';
 }
-function incomingOffer(w){
-  if(S.screen!=='scr-offers')return;
-  const accepts=S.bid>=w.thresh;
-  const price=accepts?S.bid:Math.round((w.thresh*1.06)/5)*5;
-  // Gate at BID time: a specialist whose prepaid service credit can't cover the
-  // commission on this price doesn't get to bid at all.
-  creditApi('check?id='+encodeURIComponent(w.id)+'&name='+encodeURIComponent(w.nm)+'&bidEgp='+price+'&priority='+(S.urgent?1:0)).then(r=>{
-    if(r&&r.acceptable===false){
-      if(S.screen!=='scr-offers')return;
-      const n=document.createElement('div');
-      n.style.cssText='margin:0 20px 10px;padding:10px 14px;border:1px dashed var(--line-2);border-radius:14px;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px';
-      n.innerHTML=ic('lock','sm')+'<span>'+w.nm.split(' ')[0]+' wanted to bid but was blocked — insufficient service credit.</span>';
-      $('offersWrap').prepend(n);
-      return;
-    }
-    renderOfferCard(w,accepts,price);
-  });
-}
-function renderOfferCard(w,accepts,price){
-  if(S.screen!=='scr-offers')return;
-  const id='of'+Math.random().toString(36).slice(2,7);
-  const el=document.createElement('div');el.className='offer-card';el.id=id;
-  el.innerHTML=`
-    <div class="o-timer" style="animation-duration:15s"></div>
-    <div class="o-top">
-      ${avatarHTML(w,46)}
-      <div class="wk-mid">
-        <div class="nm">${w.nm} ${w.verified?`<span class="vr">${ic('shield','sm')}</span>`:''}</div>
-        <div class="meta"><span class="rt">${ic('star','sm fill')} ${w.rate}</span><span>${w.dist} km · ~${w.eta} min</span></div>
-      </div>
-      <div class="o-price ${accepts?'':'counter'}"><b>EGP ${price}</b><span>${accepts?'ACCEPTS YOUR OFFER':'COUNTER-OFFER'}</span></div>
-    </div>
-    <div class="o-actions">
-      <button class="o-decline" onclick="declineOffer('${id}')">Decline</button>
-      <button class="o-accept" onclick="acceptOffer('${w.id}',${price})">Accept — EGP ${price}</button>
-    </div>`;
-  $('offersWrap').prepend(el);
-  toast(accepts?'check':'message',`${w.nm.split(' ')[0]} ${accepts?'accepted your price':'sent a counter-offer'}`,!accepts);
-  S.offerTimers.push(setTimeout(()=>{const e=$(id);if(e){e.style.opacity='.35';e.querySelectorAll('button').forEach(b=>b.disabled=true)}},15000));
-  // (bid was pre-gated on service credit; server still re-enforces at acceptance)
-}
 function declineOffer(id){const e=$(id);if(e){e.style.transition='all .35s';e.style.transform='translateX(110%)';e.style.opacity='0';setTimeout(()=>e.remove(),360)}}
 function raiseBid(d){
   S.bid+=d;$('offersSub').textContent=S.svc.nm+' · your offer EGP '+S.bid;
   $('bcastAmt').textContent='EGP '+S.bid;
   toast('trend-up','Offer raised to EGP '+S.bid+' — re-notifying specialists');
-  const w=[...S.workers].sort(()=>Math.random()-.5)[0];
-  S.offerTimers.push(setTimeout(()=>incomingOffer(w),1600+Math.random()*1800));
 }
 function clearOfferTimers(){S.offerTimers.forEach(t=>clearTimeout(t));S.offerTimers=[]}
 function cancelBidding(){clearOfferTimers();stopOfferPoll();nav('scr-bid',true)}
-async function acceptOffer(wid,price){
-  if(S.pay==='wallet'&&!walletSpend(price,'Job — '+svcName(S.svc)))return;
-  const w=S.workers.find(x=>x.id===wid);
-  const jobId=S.jobId||(S.activeJob&&S.activeJob.jobId)||('MC'+Date.now().toString(36));
-  // Commission hold on the specialist's prepaid service credit — server enforces
-  // coverage atomically; if it can't hold, the booking cannot proceed. svc feeds
-  // the community price anchor once the job completes.
-  const hold=await creditApi('accept','POST',{id:w.id,name:w.nm,job:jobId,bidEgp:price,priority:!!S.urgent,svc:S.svc.id,zone:custZone()});
-  if(hold&&hold.ok===false||hold&&hold.error){
-    toast('alert','This specialist can no longer take the job — pick another offer',true);
-    return;
-  }
-  clearOfferTimers();
-  const u=curUser();if(u){ensureUserShape(u);u.prefs[S.svc.id]=(u.prefs[S.svc.id]||0)+1;saveUser(u)}
-  pushNotif(S.svc.ic,'Booking confirmed',w.nm+' accepted EGP '+price+' for '+svcName(S.svc)+'.');
-  S.activeJob={w,svc:S.svc,price,stage:0,jobId};
-  S.points+=Math.round(price*0.02);
-  $('pointsVal').textContent=S.points+' pts';
-  S.activity.unshift({icn:S.svc.ic,ttl:svcName(S.svc)+' — '+w.nm,sub:'EGP '+price+' · '+payLabel(),live:true});
-  persistUser();
-  renderActivity();successFlash();
-  toast('check','Booked — '+w.nm.split(' ')[0]+' is on the way');
-  startTracking();
-}
 
 /* ============================================================
    TRACKING (real map)
@@ -2569,7 +2365,7 @@ function chooseAddr(id){
     $('locName').textContent=S.locName;
     $('locCoords').textContent=a.details||a.text;
     $('svcLocSub').textContent=S.locName;
-    if(S.svc){renderNearbyMap();renderWorkers()}
+    refreshBidZone();
     toast('pin',t('locSet')+' '+t(a.labelKey));
   }else{
     u.defaultAddr=id;saveUser(u);renderAddrList();return;
@@ -2797,42 +2593,10 @@ function multiDetect(q){
   }
   return found.length>=2?found:null;
 }
-/* ---------- deal intelligence ---------- */
-function dealChips(w,avg){
-  const e=estFor(w);let out='';
-  if(e<avg*0.9)out+=`<span class="deal-chip great">GREAT DEAL −${Math.round((1-e/avg)*100)}%</span> `;
-  if(w.eta<=10)out+=`<span class="deal-chip fast">RAPID RESPONSE</span>`;
-  return out;
-}
-/* ---------- specialist profile + reviews ---------- */
-const REV_NAMES=['Nour H.','Salma A.','Omar F.','Dina K.','Hassan M.','Laila S.','Adel R.','Mona T.'];
-const REV_TEXTS=['Arrived on time and fixed it in under an hour. Spotless work.','Very professional, explained everything before starting. Highly recommend.','Fair price, brought all his own tools. Would hire again.','Quick diagnosis and honest about what actually needed replacing.','Clean, polite and efficient. The job has held up perfectly.','Went above and beyond — even checked a second issue for free.'];
-function openWorkerSheet(id){
-  const w=S.workers.find(x=>x.id===id);if(!w)return;
-  const r=seededRand(hash('rev'+w.id+todayKey));
-  const onTime=Math.round(88+r()*11),repeat=Math.round(25+r()*55),resp=Math.round(1+r()*9);
-  const revs=[...Array(3)].map(()=>({nm:REV_NAMES[Math.floor(r()*REV_NAMES.length)],tx:REV_TEXTS[Math.floor(r()*REV_TEXTS.length)],st:r()<0.7?5:4}));
-  $('workerSheetH').textContent=svcName(S.svc);
-  $('workerBody').innerHTML=`
-    <div class="wp-head">${avatarHTML(w,64)}
-      <div class="wp-tx"><b>${w.nm} ${w.verified?`<span style="color:var(--accent);display:inline-flex">${ic('shield','sm')}</span>`:''}</b>
-      <span>${svcName(S.svc)} — ${w.area}</span></div></div>
-    <div class="wp-stats">
-      <div class="st"><b style="color:var(--gold)">${w.rate}</b><span>Rating</span></div>
-      <div class="st"><b>${w.jobs}</b><span>Jobs</span></div>
-      <div class="st"><b style="color:var(--green)">${onTime}%</b><span>On time</span></div>
-      <div class="st"><b>${resp}m</b><span>Response</span></div></div>
-    <div class="wk-tags" style="padding:0 22px 12px">${w.tags.map(x=>`<span>${x}</span>`).join('')}<span>${repeat}% repeat clients</span></div>
-    <div class="wp-bio">${w.nm.split(' ')[0]} has completed ${w.jobs} verified ${svcName(S.svc).toLowerCase()} jobs on MiCasa with a ${w.rate} average across the last 12 months. Background-checked, insured, and equipped with professional tools.</div>
-    ${revs.map(v=>`<div class="rev"><div class="rv-top"><span>${v.nm}</span><span class="stars">${Array.from({length:v.st}).map(()=>ic('star','sm fill')).join('')}${Array.from({length:5-v.st}).map(()=>ic('star','sm')).join('')}</span></div><p>${v.tx}</p></div>`).join('')}
-    <button class="cta sheet-cta" onclick="closeSheets();pickWorker('${w.id}')">Select — from EGP ${estFor(w)}</button>
-    <div style="height:12px"></div>`;
-  showSheet('workerSheet');
-}
 /* ---------- chat ---------- */
 let chatLog=[],chatWorker=null;
 function openChat(){
-  const w=(S.activeJob&&S.activeJob.w)||S.worker;if(!w)return;
+  const w=S.activeJob&&S.activeJob.w;if(!w)return;
   if(chatWorker!==w.id){chatLog=[];chatWorker=w.id}
   if(!chatLog.length){
     chatLog.push({me:false,tx:`Hello! This is ${w.nm.split(' ')[0]}. I'm on my way — anything I should know before I arrive?`});
@@ -2851,7 +2615,7 @@ function sendChat(){
   setTimeout(()=>{chatLog.push({me:false,tx:botReply(v)});renderChat()},900+Math.random()*900);
 }
 function botReply(v){
-  const w=(S.activeJob&&S.activeJob.w)||S.worker;
+  const w=S.activeJob&&S.activeJob.w;
   const q=v.toLowerCase();
   if(/eta|when|how long|arrive|time|فين|امتى|وصلت/.test(q))return `About ${Math.max(2,Math.round((w?w.eta:10)*0.7))} minutes away.`;
   if(/price|cost|cheap|discount|خصم|سعر|فلوس/.test(q))return 'The price is locked at your accepted offer — no surprises on arrival. Parts, if needed, are quoted before I fit them.';
